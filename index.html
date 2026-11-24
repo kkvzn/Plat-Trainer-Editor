@@ -1054,8 +1054,21 @@ function zipBlob(name,parts,len,crc){
   const ee=new DataView(new ArrayBuffer(22));ee.setUint32(0,0x06054b50,true);ee.setUint16(8,1,true);ee.setUint16(10,1,true);ee.setUint32(12,cdLen,true);ee.setUint32(16,cdOff,true);
   return new Blob([lh,enc,...parts,ch,enc,ee],{type:"application/zip"});
 }
-async function save(filename,data){
-  let dl=null;try{dl=await claude.use("downloads")}catch(e){}
+const getDl=async()=>{try{return await claude.use("downloads")}catch(e){return null}};
+// versione locale/desktop (Chrome, Edge, Electron): finestra di Windows per scegliere nome e cartella. Va chiamata subito al clic, prima del lavoro lungo.
+async function askWhere(filename){
+  if(typeof window.showSaveFilePicker!=="function"||await getDl())return null;
+  const ext=(filename.split(".").pop()||"").toLowerCase(),mime={zip:"application/zip",ips:"application/octet-stream",nds:"application/octet-stream"}[ext]||"application/octet-stream";
+  try{return await window.showSaveFilePicker({suggestedName:filename,types:[{description:"File "+ext.toUpperCase(),accept:{[mime]:["."+ext]}}]})}
+  catch(e){return e&&e.name==="AbortError"?"cancel":null}
+}
+async function save(filename,data,handle){
+  if(handle==="cancel"){toast("Salvataggio annullato.");return}
+  if(handle){
+    try{const w=await handle.createWritable();await w.write(data instanceof Blob?data:new Blob([data]));await w.close();toast("File salvato: "+handle.name);return}
+    catch(e){toast("Salvataggio non riuscito: "+(e&&e.message||e));return}
+  }
+  let dl=await getDl();
   if(!dl){ // fuori da Claude (versione locale/desktop): download normale del browser
     try{const blob=data instanceof Blob?data:new Blob([data]),u=URL.createObjectURL(blob),x=document.createElement("a");x.href=u;x.download=filename;document.body.appendChild(x);x.click();x.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);toast("File salvato: "+filename)}
     catch(e){toast("Salvataggio non riuscito: "+(e&&e.message||e))}
@@ -1072,25 +1085,27 @@ function ipsParts(list,solo,a){
 }
 const base=()=>S.name.replace(/\.[^.]+$/,"");
 async function saveIps(){
-  if(!S.gen)return;const parts=ipsParts(S.gen.list,S.gen.solo,S.gen.a),len=parts.reduce((n,p)=>n+p.length,0);
+  if(!S.gen)return;const hh=await askWhere("condizioni_allenatori_patch.zip");if(hh==="cancel"){toast("Salvataggio annullato.");return}const parts=ipsParts(S.gen.list,S.gen.solo,S.gen.a),len=parts.reduce((n,p)=>n+p.length,0);
   const ips=new Uint8Array(len);let o=0;for(const p of parts){ips.set(p,o);o+=p.length}
   const readme=new TextEncoder().encode("Patch IPS per Pokémon Platino (USA): HP e stato iniziali, lotta doppia da soli.\r\nApplicala alla stessa ROM che hai caricato nell'app (stesso file, stessa dimensione).\r\nPokémon con condizioni: "+S.gen.list.length+"\r\nAllenatori in doppio da soli: "+S.gen.solo.length+"\r\n");
-  await save("condizioni_allenatori_patch.zip",zipMany([["condizioni_allenatori.ips",ips],["LEGGIMI.txt",readme]]));
+  await save("condizioni_allenatori_patch.zip",zipMany([["condizioni_allenatori.ips",ips],["LEGGIMI.txt",readme]]),hh);
 }
 async function saveRom(){
-  if(!S.gen)return;$("dNote").textContent="Preparo la ROM… può richiedere qualche secondo.";
+  if(!S.gen)return;const hh=await askWhere(base()+"_patched.zip");if(hh==="cancel"){toast("Salvataggio annullato.");return}
+  $("dNote").textContent="Preparo la ROM… può richiedere qualche secondo.";
   await new Promise(r=>setTimeout(r,30));
   const r=patchedRom(S.gen.list,S.gen.solo,true),crc=crc32([r]),name=base()+"_patched.nds";
-  await save(base()+"_patched.zip",zipBlob(name,[r],r.length,crc));
+  await save(base()+"_patched.zip",zipBlob(name,[r],r.length,crc),hh);
   $("dNote").textContent="Dentro lo zip trovi "+name+". La ROM originale non è stata modificata.";
 }
 async function saveData(){
   const D=S.trainers.filter(dataDirty);if(!D.length)return;
+  const hh=await askWhere("allenatori_modificati.zip");if(hh==="cancel"){toast("Salvataggio annullato.");return}
   const files=[];
   for(const t of D){const f=trainerFiles(t),n=String(t.id).padStart(4,"0");files.push(["trainerProperties/"+n,f.hdr],["trainerParty/"+n,f.party])}
   const readme=new TextEncoder().encode("File degli allenatori modificati.\r\nCopia i file nelle cartelle omonime dentro 'unpacked' della tua ROM estratta con DSPRE, sostituendo quelli con lo stesso numero (fai prima una copia di quelli originali). Poi ricostruisci la ROM.\r\nAllenatori: "+D.map(t=>t.id).join(", ")+"\r\n");
   files.push(["LEGGIMI.txt",readme]);
-  await save("allenatori_modificati.zip",zipMany(files));
+  await save("allenatori_modificati.zip",zipMany(files),hh);
 }
 
 /* ---------- profili ---------- */
