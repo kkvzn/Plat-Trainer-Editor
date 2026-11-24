@@ -652,6 +652,8 @@ function defaultMoves(m){
   while(mv.length<4)mv.push(0); return mv;
 }
 const dataDirty=t=>snap(t)!==t.snap0;
+// come snap(), ma tratta come uguali i due modi di scrivere le stesse mosse: nel file degli allenatori, se un solo Pokémon ha mosse personalizzate, ai Pokémon «di default» vengono scritte le loro mosse di default
+const snapN=t=>{const hm=t.mons.some(m=>!m.def);return JSON.stringify([t.mons.map(m=>[m.species,m.form,m.level,m.item,m.def?(hm?defaultMoves(m):"d"):m.moves,m.iv,m.seal]),t.items,t.double])};
 
 /* ---------- dati degli allenatori: serializzazione ---------- */
 function trainerFiles(t){
@@ -920,7 +922,7 @@ function verifyData(rom){
   const fs=buildFS(rom), td=parseNarc(rom.subarray(fs[TD_PATH][0],fs[TD_PATH][1])), tp=parseNarc(rom.subarray(fs[TP_PATH][0],fs[TP_PATH][1]));
   const solo=new Set(soloIds()), back=parseTrainers(td,tp,S.texts,solo), bad=[];
   if(back.length!==S.trainers.length)bad.push("numero di allenatori diverso");
-  for(const t of S.trainers){const b=back.find(x=>x.id===t.id);if(!b||snap(b)!==snap(t))bad.push("ID "+t.id)}
+  for(const t of S.trainers){const b=back.find(x=>x.id===t.id);if(!b||snapN(b)!==snapN(t))bad.push("ID "+t.id)}
   // i testi: tutti i gruppi uguali all'originale, tranne i nomi che hanno solo voci vuote in più
   const m0=parseNarc(rom.subarray(fs["msgdata/pl_msg.narc"][0],fs["msgdata/pl_msg.narc"][1])), m1=parseNarc(S.rom.subarray(S.fs["msgdata/pl_msg.narc"][0],S.fs["msgdata/pl_msg.narc"][1]));
   let msgOk=m0.length===m1.length;
