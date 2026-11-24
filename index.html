@@ -1,0 +1,1197 @@
+<title>Platinum Trainer Editor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap">
+<style>
+/* Platinum Trainer Editor — tema scuro. Layout: caricamento ROM, poi editor a due pannelli (lista allenatori | dettaglio) con tab di navigazione. */
+:root{
+  color-scheme:dark;
+  --dur:300ms; --ease:cubic-bezier(0.91,0,0.09,1);
+  --bg:#0e1116; --panel:#161a22; --panel2:#1d222c; --field:#18181b; --chip:#33363d; --line:#2a303c; --line2:#3a4050;
+  --fg:#e7eaf0; --mute:#8d96a7; --accent:#7c5cf0; --accent-fg:#ffffff;
+  --ok:#4cc38a; --warn:#e0a53a; --bad:#ef6b6b;
+  --burn:#f0803f; --psn:#b783ee; --par:#e3c445; --frz:#5fc1ea; --slp:#9aa3b6;
+  --font-d:'Space Grotesk',system-ui,sans-serif; --font-b:'Inter',system-ui,sans-serif; --font-m:'JetBrains Mono',ui-monospace,monospace;
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23aab0bd' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --mag:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='7' cy='7' r='5' fill='none' stroke='%23e7eaf0' stroke-width='1.7'/%3E%3Cpath d='m11 11 3.5 3.5' stroke='%23e7eaf0' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 var(--font-b);padding-block:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--font-m);font-size:12px}
+.wrap{max-width:1320px;margin:0 auto;padding-block:16px 40px}
+[hidden]{display:none!important}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#3a4050;border-radius:8px}::-webkit-scrollbar-track{background:transparent}
+
+/* header */
+header.top{display:flex;align-items:center;gap:14px;padding-block:4px 18px}
+#v-ed{--font-d:'Roboto',system-ui,sans-serif;--font-b:'Roboto',system-ui,sans-serif;font-family:var(--font-b)}
+.abrow:empty{display:none}
+.abrow{margin-top:14px}
+.logo{display:block;height:42px;width:auto}
+.brand{font:700 25px/1.1 var(--font-d);letter-spacing:.005em}
+.grow{flex:1}
+.btn{border:1px solid var(--line2);background:var(--panel);border-radius:12px;padding:8px 16px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}
+.btn.pri:hover{filter:brightness(1.1)}
+.btn.pri:disabled,.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.ghost{border-style:dashed;border-color:#5a6070;background:transparent}
+.btn.exp{background:#8b5cf6;border-color:#8b5cf6;padding:9px 20px;font-size:15px}
+.btn.sm{padding:5px 12px;font-size:12.5px;border-radius:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px}
+h1,h2,h3{font-family:var(--font-d);margin:0;letter-spacing:.005em;text-wrap:balance}
+
+/* caricamento ROM */
+.load{display:grid;justify-items:center;gap:36px;padding-top:12px}
+.load .col{width:100%;max-width:720px}
+.drop{padding:30px 26px 28px;text-align:center;border:1px dashed #5a6070;border-radius:18px;background:var(--panel);transition:border-color var(--dur) var(--ease),background var(--dur) var(--ease)}
+.drop.over{border-color:var(--accent);background:var(--panel2)}
+.drop h1{font-size:30px;font-weight:500;margin-bottom:10px}
+.drop p{color:var(--mute);margin:0 auto 18px;max-width:46ch;font-size:15px}
+.drop .btn{font-size:15px;padding:9px 20px}
+.req{width:100%;max-width:1090px;padding:22px 26px 24px}
+.req h2{font-size:26px;font-weight:500;margin-bottom:14px}
+.req ul{margin:0;padding:0;list-style:none;display:grid;gap:14px}
+.req li{display:grid;grid-template-columns:38px 1fr;gap:16px;align-items:start}
+.req li b{font:500 17px var(--font-d)}
+.req li small{display:block;color:var(--mute);font-size:14px}
+.req li .ic{width:34px;height:34px;font:500 16px var(--font-d)}
+.ic{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;font:600 11px var(--font-m);background:var(--panel2);color:var(--fg)}
+.ic.ok{background:var(--ok);color:#06210f}.ic.warn{background:var(--warn);color:#2a1a00}.ic.fail{background:var(--bad);color:#2b0505}.ic.run{background:var(--accent);color:var(--accent-fg)}
+.checks{margin-top:16px;padding:16px 18px;display:grid;gap:10px;text-align:left}
+.checks .row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px}
+.checks .row div small{display:block;color:var(--mute);overflow-wrap:anywhere}
+.acts{display:flex;gap:10px;flex-wrap:wrap}
+.load .acts{justify-content:center;margin-top:16px}
+
+/* tab e barra comandi */
+.nav{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.tabs{display:flex;gap:4px;padding:5px;background:var(--field);border:1px solid var(--line);border-radius:18px;flex-wrap:wrap}
+.tab{border:0;background:none;color:#d4d7de;border-radius:14px;padding:8px 18px;font:500 16px var(--font-d)}
+.tab:hover:not(:disabled):not(.on){background:var(--panel2)}
+.tab.on{background:var(--accent);color:var(--accent-fg);font-weight:600}
+.tab:disabled{opacity:.55;cursor:default}
+.stats{display:flex;gap:6px 22px;flex-wrap:wrap;margin-bottom:14px;color:var(--mute);font-size:12.5px}
+.stats span b{color:var(--fg);font:600 14px var(--font-d);font-variant-numeric:tabular-nums;margin-right:4px}
+
+/* editor */
+.ed{display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:900px){.ed{grid-template-columns:1fr}}
+.list{display:flex;flex-direction:column;max-height:calc(100vh - 220px);min-height:380px;overflow:hidden}
+@media(max-width:900px){.list{max-height:380px}}
+.filters{padding:12px;display:grid;gap:10px}
+.filters input{width:100%;padding:9px 14px 9px 38px;border:1px solid var(--line2);border-radius:999px;background:var(--field) var(--mag) no-repeat 13px center;background-size:16px}
+.sw{position:relative;display:block}
+.filters .sw input{padding-right:38px}
+.sw.has .cx{display:grid}
+.filters .two{display:flex;gap:8px;flex-wrap:wrap}
+.filters select{appearance:none;-webkit-appearance:none;border:0;border-radius:999px;background:#3b3d42 var(--chev) no-repeat right 11px center;padding:5px 30px 5px 13px;font-weight:600;font-size:13px;color:#cfd2d9;min-width:0;max-width:100%}
+.items{overflow:auto;flex:1;padding:0 6px 8px}
+.it{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;padding:10px 12px;width:100%;text-align:left;background:none;border:0;border-left:3px solid transparent;border-radius:10px}
+.it:hover{background:var(--panel2)}
+.it.sel{background:var(--panel2);border-left-color:var(--accent)}
+.it .n{font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.it .c{color:var(--mute);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.it .id{font:12.5px var(--font-m);color:var(--mute);text-align:right}
+.it .cnt{font-size:12.5px;color:var(--mute);text-align:right}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:6px;vertical-align:middle}
+.empty{padding:60px 20px;text-align:center;color:var(--mute)}
+
+.det{padding:22px 24px;background:#12151d}
+.dh{display:flex;gap:14px 20px;flex-wrap:wrap;align-items:stretch;margin-bottom:8px}
+.dh .seg{align-items:stretch}
+.dh .seg .sg{display:flex;align-items:center;padding:0 22px;font-size:17px;border-radius:12px}
+.dh .rm{align-self:center}
+.dh h2{font-size:36px;font-weight:700;line-height:1.1}
+.dh .cls{color:var(--mute);font:500 20px var(--font-d);margin-top:2px}
+.rm{margin-left:auto}
+.seg{display:inline-flex;gap:4px;padding:5px;background:var(--field);border:1px solid var(--line2);border-radius:16px}
+.seg .sg{border:0;background:none;border-radius:11px;padding:7px 16px;font:600 15px var(--font-d);color:#d4d7de;white-space:nowrap}
+.seg .sg:hover:not(:disabled):not([aria-pressed="true"]){background:var(--panel2)}
+.seg .sg[aria-pressed="true"]{background:#474252;color:#fff}
+.seg .sg:disabled{cursor:not-allowed;opacity:.7}
+.seg.sm{border-radius:14px;padding:4px}.seg.sm .sg{font-size:13px;padding:5px 12px;text-transform:uppercase;letter-spacing:.02em}
+.chip{display:inline-block;padding:2px 10px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--mute);background:var(--bg)}
+.meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.mod2{background:var(--accent);color:var(--accent-fg);border-radius:999px;padding:1px 9px;font-size:11.5px}
+.sh{font:600 17px var(--font-d);text-transform:uppercase;letter-spacing:.02em;margin:24px 0 12px;color:#eceef3}
+.sh .ct{color:var(--mute);font-weight:400;margin-left:8px}
+.opts .items4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media(max-width:900px){.opts .items4{grid-template-columns:1fr 1fr}}
+.pnote{color:var(--mute);font-size:12.5px;margin:6px 0 0}
+
+/* Pokémon */
+.party{display:grid;gap:14px}
+.mon{border:1px solid var(--line);border-radius:16px;background:transparent;padding:14px 18px 18px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:22px;min-width:0}
+@media(max-width:1100px){.mon{grid-template-columns:1fr}}
+@media(min-width:1180px){
+  .party{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .mon{grid-template-columns:1fr;gap:18px;container-type:inline-size}
+  .addmon{min-height:96px;align-self:start}
+  .list{position:sticky;top:12px;max-height:calc(100vh - 24px)}
+}
+@container (max-width:560px){
+  .cw.hasT .cmb{padding-left:68px}
+  .tb{min-width:50px;font-size:9.5px;left:6px}
+  .mv4{gap:8px}
+  .mrow .cw{flex-basis:150px}
+}
+.mon.cust{border-color:var(--accent)}
+.mon{position:relative}
+.trash{position:absolute;top:12px;right:12px;z-index:2;display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:10px;background:rgba(239,68,68,.12);color:#f87171}
+.mon:has(.trash) .mtop{padding-right:46px;flex-wrap:nowrap}
+.trash:hover{background:rgba(239,68,68,.22);color:#fca5a5}.trash:active{transform:scale(.94)}
+.trash:focus-visible{outline-color:#f87171}
+.mcol{display:grid;gap:16px;align-content:start;min-width:0}
+.mtop{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mtop .cw.sp{flex:0 1 190px}
+.mrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mrow .cw{flex:1 1 180px}
+.spr{zoom:1.2;flex:none;margin-block:-14px;width:80px;height:80px;background-image:url(sprites.png);background-size:1920px 1680px;background-repeat:no-repeat;image-rendering:pixelated}
+.spr.none{background:var(--panel2);display:grid;place-items:center;color:var(--mute);font:12px var(--font-m)}
+.ab{font:500 13.5px var(--font-d);text-transform:uppercase;letter-spacing:.02em;opacity:.7}
+.lvl{width:72px;padding:8px 8px 8px 12px;border:0;border-radius:12px;background:var(--field);font-weight:600}
+label.t{display:block;font:600 14px var(--font-d);letter-spacing:.03em;text-transform:uppercase;color:#dfe2e8;margin-bottom:8px}
+.sec .sub2{color:var(--mute);font-weight:400;text-transform:none;letter-spacing:0;font-size:12px;margin-left:6px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.cb{flex:0 0 auto;padding:4px 12px;text-transform:uppercase;border-radius:999px;border:1px solid var(--line2);background:transparent;color:#d4d7de;font:600 13px var(--font-d);letter-spacing:.02em}
+.cb:hover{background:var(--panel2)}
+.cb[aria-pressed="true"]{background:#474252;border-color:#474252;color:#fff}
+.cb.s[aria-pressed="true"]{background:var(--sc);border-color:var(--sc);color:#fff}
+.cb.s[data-st="0"][aria-pressed="true"]{background:#474252;border-color:#474252}
+.sb{display:inline-block;padding:2px 7px;border-radius:5px;background:linear-gradient(var(--g1),var(--g2));color:var(--tc,#fff);font:800 11px/1.2 system-ui,sans-serif;letter-spacing:.06em;text-shadow:0 1px 0 rgba(0,0,0,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 0 0 1px rgba(0,0,0,.4)}
+.cb.s.sic{padding:4px;line-height:0;border-color:transparent;border-radius:8px}
+.cb.s.sic:hover{background:var(--panel2)}
+.cb.s.sic[aria-pressed="true"]{background:#474252;border-color:#8b5cf6;box-shadow:0 0 0 1px #8b5cf6}
+.cb.pre{padding:2px 10px;font-size:12px;background:transparent;border:1px solid var(--line2);color:var(--mute)}
+.cb.pre[aria-pressed="true"]{background:#474252;border-color:#474252;color:#fff}
+.hprow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;margin-bottom:10px}
+.hpbar{position:relative;height:12px;border-radius:8px;background:#2a2f3a;cursor:ew-resize;touch-action:none;outline-offset:6px;margin-right:4px}
+.hpbar i{display:block;height:100%;border-radius:8px 0 0 8px;background:var(--ok);transition:width var(--dur) var(--ease),background-color var(--dur) var(--ease)}
+.hpbar .thumb{transition:left var(--dur) var(--ease);position:absolute;top:50%;width:7px;height:22px;margin:-11px 0 0 -3px;border-radius:4px;background:#f3f4f7;box-shadow:0 0 0 2px #12151d;pointer-events:none}
+.hpin{display:flex;align-items:center;gap:4px}
+.hpin input{width:76px;padding:6px 8px;border:1px solid var(--line2);border-radius:10px;background:transparent;text-align:center;font-weight:500}
+.sub{color:var(--mute);font-size:12.5px}
+.chk{display:flex;gap:8px;align-items:center}
+.chk input{appearance:none;-webkit-appearance:none;flex:none;width:20px;height:20px;margin:0;border:1px solid rgba(223,223,223,.2);border-radius:6px;background:transparent center/14px no-repeat;cursor:pointer}
+.chk input:checked{background-color:var(--accent);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='m2.8 7.4 2.7 2.7 5.7-6' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.chk input:disabled{opacity:.5;cursor:not-allowed}
+.chk label{font-size:15px}
+.dm{margin-bottom:12px}
+.mv4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.mv4{grid-template-columns:1fr}}
+.fld{display:grid;gap:8px}
+.note{color:var(--mute);font-size:12.5px}
+.addmon{border:1px dashed var(--line2);border-radius:16px;background:none;min-height:84px;color:var(--mute);font-weight:500;font-size:15px}
+.addmon:hover{border-color:var(--accent);color:var(--fg)}
+
+/* campi con elenco (specie, strumenti, mosse) */
+.cw{position:relative;display:block;min-width:0}
+.cmb{width:100%;min-width:0;padding:9px 34px 9px 14px;border:1px solid var(--line2);border-radius:12px;background:transparent var(--chev) no-repeat right 12px center;color:var(--fg);font:inherit}
+.cmb[data-k="species"]{background-color:var(--field)}
+.cmb:disabled{opacity:.65;cursor:not-allowed;background-image:none}
+.cmb::placeholder{color:var(--mute);opacity:.6;font-style:italic}
+.cmb.keep::placeholder{color:var(--mute);opacity:.6;font-style:italic}
+.cmb::-webkit-calendar-picker-indicator{position:absolute;right:0;top:0;width:34px;height:100%;opacity:0;cursor:pointer}
+.cw.has:focus-within .cmb::-webkit-calendar-picker-indicator{opacity:0;pointer-events:none}
+.cmb[data-k="species"]{text-transform:uppercase;font:700 15px var(--font-d);letter-spacing:.02em}
+.cx{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:none;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:var(--panel2);color:var(--mute);font:600 16px/1 system-ui,sans-serif;cursor:pointer;place-items:center}
+.cx:hover{background:var(--line);color:var(--fg)}
+.cw.has:focus-within .cx{display:grid}
+.cw.has:focus-within .cmb{background-image:none}
+.tb{position:absolute;left:8px;top:50%;transform:translateY(-50%);min-width:62px;text-align:center;padding:2px 6px;border-radius:5px;background:var(--tc);color:#fff;font:700 10.5px/1.25 system-ui,sans-serif;letter-spacing:.03em;text-shadow:0 1px 1px rgba(0,0,0,.45);box-shadow:inset 0 -2px 0 rgba(0,0,0,.18);pointer-events:none;z-index:1}
+.cw.hasT .cmb{padding-left:80px}
+
+/* patch */
+.drawer{margin-top:16px;padding:20px 22px;display:grid;gap:14px}
+.drawer h2{font-size:20px}
+.drawer h3{font-size:13px;color:var(--mute);letter-spacing:.05em;text-transform:uppercase}
+.cap{height:8px;border-radius:5px;background:var(--panel2);overflow:hidden}
+.cap i{display:block;height:100%;background:var(--accent)}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{text-align:left;font-weight:600;color:var(--mute);font-size:12px;padding:4px 8px;border-bottom:1px solid var(--line)}
+table.t td{padding:6px 8px;border-bottom:1px solid var(--line)}
+.tw{overflow-x:auto}
+.kv{display:flex;gap:18px;flex-wrap:wrap}
+.kv div{display:grid}
+.kv small{color:var(--mute)}
+.prof{padding:14px;margin-bottom:12px}
+.prof input,.prof select{padding:7px 12px;border:1px solid var(--line2);border-radius:10px;background:var(--field)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:#f1f2f6;color:#12151d;padding:10px 18px;border-radius:12px;font-size:13px;max-width:90vw;z-index:20;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+
+/* movimento: 300ms, cubic-bezier(0.91,0,0.09,1) */
+.btn,.tab,.cb,.sg,.it,.cmb,.lvl,.chip,.addmon,.mon,.hpin input,.chk input,.filters select,.filters input,.cx,.seg,.tabs,.prof input,.prof select{transition:background-color var(--dur) var(--ease),border-color var(--dur) var(--ease),color var(--dur) var(--ease),box-shadow var(--dur) var(--ease),opacity var(--dur) var(--ease),filter var(--dur) var(--ease)}
+.btn:active,.cb:active,.sg:active,.tab:active:not(:disabled){transform:scale(.97)}
+.btn,.cb,.sg,.tab{transition-property:background-color,border-color,color,box-shadow,opacity,filter,transform}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes pop{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%)}}
+#v-load:not([hidden]),#v-ed:not([hidden]){animation:fade var(--dur) var(--ease) both}
+#v-load .col,.req{animation:rise var(--dur) var(--ease) both}.req{animation-delay:60ms}
+.det.in>*,.mon,.addmon{animation:rise var(--dur) var(--ease) both}
+.drawer:not([hidden]),.prof:not([hidden]){animation:rise var(--dur) var(--ease) both}
+.checks:not([hidden]),#goRow:not([hidden]){animation:rise var(--dur) var(--ease) both}
+.toast:not([hidden]){animation:pop var(--dur) var(--ease) both}
+.hpbar.drag i,.hpbar.drag .thumb{transition:none}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <img class="logo" src="logo.png" alt="">
+  <span class="brand">Platinum Trainer Editor</span>
+  <span class="grow"></span>
+  <button class="btn ghost" id="hAgain" hidden>Scegli un'altra ROM</button>
+  <button class="btn pri exp" id="bPatch" hidden>Esporta ROM</button>
+</header>
+
+<!-- STEP 1 -->
+<section id="v-load" class="load">
+  <div class="col">
+    <div class="drop" id="drop">
+      <h1>Carica la tua ROM di Platino</h1>
+      <p>Trascina qui il file <span class="mono">.nds</span> di Pokémon Platino (USA) oppure scegli il file. Resta tutto nel tuo browser: la ROM non viene caricata su nessun server.</p>
+      <button class="btn pri" id="pick">Scegli la ROM…</button>
+      <input type="file" id="file" accept=".nds,.bin" hidden>
+    </div>
+    <div class="card checks" id="checks" hidden></div>
+    <div class="acts" id="goRow" hidden>
+      <button class="btn pri" id="go">Apri l'editor degli allenatori</button>
+      <button class="btn" id="again">Scegli un'altra ROM</button>
+    </div>
+  </div>
+  <div class="card req">
+    <h2>Cosa serve</h2>
+    <ul>
+      <li><span class="ic">1</span><div><b>Platino USA</b><small>Codice gioco CPUE. Va bene anche la ROM con i testi italiani trapiantati, come la tua.</small></div></li>
+      <li><span class="ic">2</span><div><b>ARM9 non compresso</b><small>L'app aggancia il codice in tre punti dell'ARM9 e controlla che siano quelli originali del gioco. Se l'ARM9 fosse compresso va prima decompresso (con DSPRE o ndstool).</small></div></li>
+      <li><span class="ic">3</span><div><b>Overlay sintetico di DSPRE</b><small>La ROM deve avere la patch «Expand ARM9» (Patch Toolbox di DSPRE): il piccolo codice (circa 290 byte, sempre gli stessi) va nel membro 9 di <span class="mono">weather_sys.narc</span>, che il gioco carica all'avvio a 0x023C8000. HP, stato, shiny e allenatori in doppio da soli stanno in record aggiunti al file degli allenatori, quindi non hanno limite. Se manca, l'app ti chiede se applicarla lei (la stessa scrittura di DSPRE, solo nella ROM esportata); altrimenti non apre la ROM.</small></div></li>
+      <li><span class="ic">4</span><div><b>I file di dati degli allenatori</b><small><span class="mono">trdata.narc</span>, <span class="mono">trpoke.narc</span> e <span class="mono">pl_msg.narc</span> per nomi, classi, specie, strumenti e mosse.</small></div></li>
+    </ul>
+    <p class="note" style="margin:16px 0 0">Verificato in gioco: scottatura e 50% di HP su un Pokémon, lotta doppia con un solo allenatore, Pokémon, livelli, mosse e strumenti cambiati (tutto su Bullo Ricky). Gli altri stati e gli altri allenatori usano le stesse regole ma non sono ancora stati provati in partita.</p>
+  </div>
+</section>
+
+<!-- STEP 2 -->
+<section id="v-ed" hidden>
+  <div class="nav">
+    <nav class="tabs" aria-label="Editor">
+      <button class="tab on" aria-current="page">Trainer Editor</button>
+      <button class="tab" disabled title="Non ancora disponibile">Pokémon Editor</button>
+      <button class="tab" disabled title="Non ancora disponibile">Encounter Editor</button>
+      <button class="tab" disabled title="Non ancora disponibile">Moves Editor</button>
+      <button class="tab" disabled title="Non ancora disponibile">Items Editor</button>
+    </nav>
+    <span class="grow"></span>
+    <button class="btn sm" id="bProf">Profili</button>
+  </div>
+  <div class="stats" aria-label="Riepilogo">
+    <span><b id="sT">0</b>Allenatori</span>
+    <span><b id="sP">0</b>Pokémon</span>
+    <span><b id="sCT">0</b>Allenatori modificati</span>
+    <span><b id="sCP">0</b>Pokémon modificati</span>
+    <span><b id="sCap">0</b>Codice aggiunto (byte)</span>
+  </div>
+  <div class="card prof" id="prof" hidden>
+    <div class="acts">
+      <input id="pname" placeholder="Nome profilo">
+      <button class="btn sm" id="pSave">Salva nel browser</button>
+      <select id="pSel"></select>
+      <button class="btn sm" id="pLoad">Carica</button>
+      <button class="btn sm" id="pExp">Esporta JSON</button>
+      <button class="btn sm" id="pImp">Importa JSON…</button>
+      <input type="file" id="pFile" accept=".json" hidden>
+      <button class="btn sm" id="pReset">Azzera tutto</button>
+    </div>
+  </div>
+  <div class="ed">
+    <div class="card list">
+      <div class="filters">
+        <span class="sw" id="sw"><input id="q" placeholder="Cerca per nome o ID" aria-label="Cerca allenatore" autocomplete="off"><button type="button" class="cx" id="qx" tabindex="-1" aria-label="Cancella la ricerca" title="Cancella la ricerca">×</button></span>
+        <div class="two">
+          <select id="fc" aria-label="Filtra per classe"><option value="">Tutte le classi</option></select>
+          <select id="so" aria-label="Ordina"><option value="id">Ordina per ID</option><option value="name">Ordina per nome</option><option value="mod">Prima i modificati</option></select>
+        </div>
+      </div>
+      <div class="items" id="items"></div>
+    </div>
+    <div id="dls" hidden></div><div class="card det" id="det"><div class="empty">Scegli un allenatore dalla lista.</div></div>
+  </div>
+
+  <div class="card drawer" id="drawer" hidden>
+    <h2>Patch ed esportazione</h2>
+    <div class="note">Tre passaggi separati: controllo, generazione e salvataggio. La tua ROM originale non viene mai toccata. Le condizioni (HP, stato, shiny) e la lotta doppia da soli finiscono nei dati degli allenatori nella ROM, con un piccolo codice nell'overlay sintetico di DSPRE (tre salti nell'ARM9); Pokémon, mosse e strumenti vanno nei file degli allenatori per DSPRE.</div>
+    <div>
+      <div class="kv"><div><b id="dCount">0</b><small>Pokémon con condizioni</small></div><div><b id="dSolo">0</b><small>Allenatori in doppio da soli</small></div><div><b id="dCap">0 / 300</b><small>Codice aggiunto (byte)</small></div></div>
+      <div class="cap" style="margin-top:8px"><i id="dBar" style="width:0%"></i></div>
+    </div>
+    <h3>Condizioni dei Pokémon</h3>
+    <div class="tw"><table class="t" id="dTable"></table></div>
+    <h3>Allenatori con dati modificati (file per DSPRE)</h3>
+    <div class="tw"><table class="t" id="dData"></table></div>
+    <div id="dChecks" style="display:grid;gap:8px"></div>
+    <div class="acts">
+      <button class="btn" id="bGen">Genera e controlla</button>
+      <button class="btn pri" id="bIps" disabled>Patch ARM9 IPS (zip)</button>
+      <button class="btn pri" id="bRom" disabled>ROM patchata (zip)</button>
+      <button class="btn pri" id="bData" disabled>File allenatori per DSPRE (zip)</button>
+    </div>
+    <div class="note" id="dNote"></div>
+  </div>
+</section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+/* ---------- codici dell'iniettore (verificati in gioco su Platino USA) ---------- */
+const HOOK_ADDR = 0x020F93D0, ARM9_BASE = 0x02000000, HOOK_OFF = HOOK_ADDR - ARM9_BASE, REGION = 300;
+// Overlay sintetico di DSPRE (Platino USA): membro 9 di data/weather_sys.narc, copiato a 0x023C8000 all'avvio dalla patch «Expand ARM9»
+// (ToolboxDB.syntheticOverlayFileNumbersDB, RomInfo.synthOverlayLoadAddress, PatchToolboxDialog.ApplyARM9ExpansionButton_Click)
+const SYN_PATH = "data/weather_sys.narc", SYN_MEMBER = 9, SYN_LOAD = 0x023C8000, SYN_SIZE = 0x16000;
+const DSPRE_BR = {off:0xCB4, bytes:[0x00,0xF1,0x5E,0xFC]};   // BL verso la routine di caricamento (ARM9PatchData, Platino inglese)
+const DSPRE_BR_ORIG = [0x00,0x20,0x03,0x21];   // Platino USA originale: movs r0,#0 ; movs r1,#3 (DSPRE li sostituisce con la BL e li rimette in fondo alla routine)
+const DSPRE_INIT_ORIG = Array.from("Assertion (%s) failed in ",c=>c.charCodeAt(0));   // 25 byte di una stringa di errore mai usata, su cui DSPRE scrive la routine
+const DSPRE_INIT = {off:0x101574, bytes:[0xFC,0xB5,0x04,0x48,0x41,0x21,0x09,0x22,0x05,0xF7,0x92,0xFA,0x00,0x20,0x03,0x21,0xFC,0xBD,0x00,0x00,0x00,0x80,0x3C,0x02,0x00]};
+const hexb = h => Uint8Array.from(h.match(/../g).map(x => parseInt(x, 16)));
+const CODE6 = hexb("01b588b0002601e0343d0136342dfbd2b600a019856946683248854248d2401902a92f4b984700277068874240d2062f3ed2780003a9095a002937d00191ec227a43b41808344804000e0090201ca0216a461f4b98470199c90b0ed0201c002100221c4b9847010c48400004000c0090201c07216a46164b984701994906490e14d0201ca4210022124b984701994906490e48436421104b9847002800d101200090201ca3216a46094b98470137bbe708b003bc8e46094b184710b588b0094940186946064b9847049808b010bd00bf314b0702714407026c1f0e02ddd201028d93070257030000002d08d101b5381cfff7e3ff002803bc8e4600d03d1c014b184700bf610a050201b5fff7d6ff002803bc8e4602d10921014b18470020704721920702"), N6 = 228, O6_2 = 232, O6_3 = 264;   // versione 6: un solo blocco (HP/stato/shiny + doppia da soli); la lista dei doppi da soli sta nel record extra (parola a offset 16), N a offset N6
+const CODE1 = hexb("01b588b0002601e0343d0136342dfbd2b600a019856946682d48854248d2401902a92a4b984700277068874240d2062f3ed2780003a9095a002937d00191ec227a43b41808344804000e0090201ca0216a461a4b98470199c90b0ed0201c00210022174b9847010c48400004000c0090201c07216a46114b984701994906490e14d0201ca42100220d4b984701994906490e484364210b4b9847002800d101200090201ca3216a46044b98470137bbe708b003bc8e46044b184700bf314b0702714407026c1f0e02ddd201028d93070257030000");   // versione 5 (HP, stato e shiny): solo per riconoscerla: legge i dati dai record extra di trdata.narc (dal byte 4 del record); gli ultimi 4 byte sono il numero di allenatori N
+const CODE1_V4 = hexb("01b588b0002601e0343d0136342dfbd2b600a019856946682348854235d2401902a9204b98470027706887422dd2062f2bd2780003a9095a002924d00191ec227a43b4180834c8090090201ca0216a46104b984701994906490e14d0201ca42100220d4b984701994906490e484364210a4b9847002800d101200090201ca3216a46044b98470137cee708b003bc8e46034b1847314b0702714407026c1f0e02ddd201028d93070257030000");   // versione 4 (senza shiny): solo per riconoscerla
+const CODE1_V3 = hexb("01b588b0002601e0343d0136342dfbd2b600a019856946682348854235d2401902a9204b98470027706887422dd2062f2bd2780002a9095a002924d00191ec227a43b4180834c8090090201ca0216a46104b984701994906490e14d0201ca42100220d4b984701994906490e484364210a4b9847002800d101200090201ca3216a46044b98470137cee708b003bc8e46034b1847314b0702714407026c1f0e02ddd201028d93070257030000");   // versione 3: stesso schema ma i dati nel record partivano dal byte 0
+const CODE1_V2 = hexb("01b582b0002601e0343d0136342dfbd2b600a0198569466823a73868002836d001908105890d4a1c920a01d1a9422cd10198c104490f7068814226d2ec22514371180c1c083401980001000e0090201ca0216a46104b984701990903490e14d0201ca42100220d4b984701990903490e484364210a4b9847002800d101200090201ca3216a46044b98470437c5e702b003bc8e46034b1847314b0702714407026c1f0e02ddd20102");   // versione 2 (tabella compatta nell'ARM9, 4 byte a voce): solo per leggere e convertire patch già fatte
+const CODE1_OLD = hexb("01b582b0002601e0343d0136342dfbd2b600a019856946681ea7388800282cd0411c090401d0a84225d1b9787068814221d2ec22514371180c1c083478680090201ca0216a460f4b9847f978002912d0201ca42100220c4b9847f978484364210a4b9847002800d101200090201ca3216a46044b98470837cfe702b003bc8e46034b1847314b0702714407026c1f0e02ddd20102");   // versione precedente (8 byte a voce): solo per leggere e convertire patch già fatte
+const CODE2 = hexb("002d08d106a21188002904d0b94201d00232f8e73d1c014b184700bf610a0502");   // lotta doppia da soli: dopo il codice la lista di ID (2 byte l'uno + 2 di fine)
+const CODE3 = hexb("064a1188002905d0814201d00232f8e7002070470921024b184700bfa0940f0221920702");   // il campo non cerca il partner per gli ID in lista; gli ultimi 8 byte: indirizzo lista + salto
+const SITES = [                     // punti dove il gioco chiama una funzione: [offset nell'ARM9, indirizzo, byte originali]
+  {off:0x797C0, addr:0x020797C0, orig:[0xa3,0xf7,0x8c,0xfd]},   // fine di TrainerData_BuildParty
+  {off:0x515D8, addr:0x020515D8, orig:[0xff,0xf7,0x42,0xfa]},   // in Encounter_NewVsTrainer
+  {off:0x3F290, addr:0x0203F290, orig:[0x39,0xf0,0xc6,0xff]}    // in Script_IsTrainerDoubleBattle
+];
+const CHARMAP = {"1":"　","2":"ぁ","3":"あ","4":"ぃ","5":"い","6":"ぅ","7":"う","8":"ぇ","9":"え","10":"ぉ","11":"お","12":"か","13":"が","14":"き","15":"ぎ","16":"く","17":"ぐ","18":"け","19":"げ","20":"こ","21":"ご","22":"さ","23":"ざ","24":"し","25":"じ","26":"す","27":"ず","28":"せ","29":"ぜ","30":"そ","31":"ぞ","32":"た","33":"だ","34":"ち","35":"ぢ","36":"っ","37":"つ","38":"づ","39":"て","40":"で","41":"と","42":"ど","43":"な","44":"に","45":"ぬ","46":"ね","47":"の","48":"は","49":"ば","50":"ぱ","51":"ひ","52":"び","53":"ぴ","54":"ふ","55":"ぶ","56":"ぷ","57":"へ","58":"べ","59":"ぺ","60":"ほ","61":"ぼ","62":"ぽ","63":"ま","64":"み","65":"む","66":"め","67":"も","68":"ゃ","69":"や","70":"ゅ","71":"ゆ","72":"ょ","73":"よ","74":"ら","75":"り","76":"る","77":"れ","78":"ろ","79":"わ","80":"を","81":"ん","82":"ァ","83":"ア","84":"ィ","85":"イ","86":"ゥ","87":"ウ","88":"ェ","89":"エ","90":"ォ","91":"オ","92":"カ","93":"ガ","94":"キ","95":"ギ","96":"ク","97":"グ","98":"ケ","99":"ゲ","100":"コ","101":"ゴ","102":"サ","103":"ザ","104":"シ","105":"ジ","106":"ス","107":"ズ","108":"セ","109":"ゼ","110":"ソ","111":"ゾ","112":"タ","113":"ダ","114":"チ","115":"ヂ","116":"ッ","117":"ツ","118":"ヅ","119":"テ","120":"デ","121":"ト","122":"ド","123":"ナ","124":"ニ","125":"ヌ","126":"ネ","127":"ノ","128":"ハ","129":"バ","130":"パ","131":"ヒ","132":"ビ","133":"ピ","134":"フ","135":"ブ","136":"プ","137":"ヘ","138":"ベ","139":"ペ","140":"ホ","141":"ボ","142":"ポ","143":"マ","144":"ミ","145":"ム","146":"メ","147":"モ","148":"ャ","149":"ヤ","150":"ュ","151":"ユ","152":"ョ","153":"ヨ","154":"ラ","155":"リ","156":"ル","157":"レ","158":"ロ","159":"ワ","160":"ヲ","161":"ン","162":"０","163":"１","164":"２","165":"３","166":"４","167":"５","168":"６","169":"７","170":"８","171":"９","172":"Ａ","173":"Ｂ","174":"Ｃ","175":"Ｄ","176":"Ｅ","177":"Ｆ","178":"Ｇ","179":"Ｈ","180":"Ｉ","181":"Ｊ","182":"Ｋ","183":"Ｌ","184":"Ｍ","185":"Ｎ","186":"Ｏ","187":"Ｐ","188":"Ｑ","189":"Ｒ","190":"Ｓ","191":"Ｔ","192":"Ｕ","193":"Ｖ","194":"Ｗ","195":"Ｘ","196":"Ｙ","197":"Ｚ","198":"ａ","199":"ｂ","200":"ｃ","201":"ｄ","202":"ｅ","203":"ｆ","204":"ｇ","205":"ｈ","206":"ｉ","207":"ｊ","208":"ｋ","209":"ｌ","210":"ｍ","211":"ｎ","212":"ｏ","213":"ｐ","214":"ｑ","215":"ｒ","216":"ｓ","217":"ｔ","218":"ｕ","219":"ｖ","220":"ｗ","221":"ｘ","222":"ｙ","223":"ｚ","225":"！","226":"？","227":"、","228":"。","229":"⋯","230":"・","231":"／","232":"「","233":"」","234":"『","235":"』","236":"（","237":"）","238":"㊚","239":"㊛","240":"＋","241":"－","242":"⊗","243":"⊘","244":"＝","245":"ｚ","246":"：","247":"；","248":"．","249":"，","250":"♤","251":"♧","252":"♡","253":"♢","254":"☆","255":"◎","256":"○","257":"□","258":"△","259":"◇","260":"＠","261":"♫","262":"％","263":"☼","264":"☔","265":"☰","266":"❄","267":"☋","268":"♔","269":"♕","270":"☊","271":"⇗","272":"⇘","273":"☾","274":"¥","275":"♈","276":"♉","277":"♊","278":"♋","279":"♌","280":"♍","281":"♎","282":"♏","283":"←","284":"↑","285":"↓","286":"→","287":"‣","288":"＆","289":"0","290":"1","291":"2","292":"3","293":"4","294":"5","295":"6","296":"7","297":"8","298":"9","299":"A","300":"B","301":"C","302":"D","303":"E","304":"F","305":"G","306":"H","307":"I","308":"J","309":"K","310":"L","311":"M","312":"N","313":"O","314":"P","315":"Q","316":"R","317":"S","318":"T","319":"U","320":"V","321":"W","322":"X","323":"Y","324":"Z","325":"a","326":"b","327":"c","328":"d","329":"e","330":"f","331":"g","332":"h","333":"i","334":"j","335":"k","336":"l","337":"m","338":"n","339":"o","340":"p","341":"q","342":"r","343":"s","344":"t","345":"u","346":"v","347":"w","348":"x","349":"y","350":"z","351":"À","352":"Á","353":"Â","354":"Ã","355":"Ä","356":"Å","357":"Æ","358":"Ç","359":"È","360":"É","361":"Ê","362":"Ë","363":"Ì","364":"Í","365":"Î","366":"Ï","367":"Ð","368":"Ñ","369":"Ò","370":"Ó","371":"Ô","372":"Õ","373":"Ö","374":"×","375":"Ø","376":"Ù","377":"Ú","378":"Û","379":"Ü","380":"Ý","381":"Þ","382":"ß","383":"à","384":"á","385":"â","386":"ã","387":"ä","388":"å","389":"æ","390":"ç","391":"è","392":"é","393":"ê","394":"ë","395":"ì","396":"í","397":"î","398":"ï","399":"ð","400":"ñ","401":"ò","402":"ó","403":"ô","404":"õ","405":"ö","406":"÷","407":"ø","408":"ù","409":"ú","410":"û","411":"ü","412":"ý","413":"þ","414":"ÿ","415":"Œ","416":"œ","417":"Ş","418":"ş","419":"ª","420":"º","421":"¹","422":"²","423":"³","424":"$","425":"¡","426":"¿","427":"!","428":"?","429":",","430":".","431":"…","432":"·","433":"/","434":"‘","435":"’","436":"“","437":"”","438":"„","439":"《","440":"》","441":"(","442":")","443":"♂","444":"♀","445":"+","446":"-","447":"*","448":"#","449":"=","450":"&","451":"~","452":":","453":";","454":"♠","455":"♣","456":"♥","457":"♦","458":"★","459":"◉","460":"●","461":"■","462":"▲","463":"◆","464":"@","465":"♪","466":"%","467":"☀","468":"☁","469":"☂","470":"☃","471":"☺","472":"♚","473":"♛","474":"☹","475":"↗","476":"↘","477":"☽","478":" ","479":"⁴","480":"₧","481":"₦","482":" ","488":"°","489":"_","490":"＿"};
+const BANK = {names:618, classes:619, species:412, items:392, moves:647};
+const STATUSES = [
+  {k:"none",label:"Nessuno",v:0,c:"--slp"},
+  {k:"brn",label:"Scottatura",v:0x10,c:"--burn",ic:["BRN","#f8985a","#d4481a"]},
+  {k:"psn",label:"Veleno",v:0x08,c:"--psn",ic:["PSN","#f060d8","#b81a9e"]},
+  {k:"tox",label:"Veleno forte",v:0x80,c:"--psn",ic:["PSN","#5c2a92","#341060","#ff4fe0"]},
+  {k:"par",label:"Paralisi",v:0x40,c:"--par",ic:["PAR","#f8e45a","#d4a812"]},
+  {k:"slp",label:"Sonno (3 turni)",v:0x03,c:"--slp",ic:["SLP","#b0b8c0","#6c747c"]},
+  {k:"frz",label:"Congelamento",v:0x20,c:"--frz",ic:["FRZ","#80dcfa","#34a0d4"]}
+];
+const stBadge=s=>s.ic?`<span class="sb" style="--g1:${s.ic[1]};--g2:${s.ic[2]}${s.ic[3]?";--tc:"+s.ic[3]:""}">${s.ic[0]}</span>`:"";
+const HP_PRESETS = [100,90,75,50,25,10];
+
+/* ---------- utilità binarie ---------- */
+const u16=(b,o)=>b[o]|(b[o+1]<<8);
+const u32=(b,o)=>((b[o]|(b[o+1]<<8)|(b[o+2]<<16)|(b[o+3]<<24))>>>0);
+const asc=(b,o,n)=>{let s="";for(let i=0;i<n;i++)s+=String.fromCharCode(b[o+i]);return s};
+function crc16(b,n){let c=0xFFFF;for(let i=0;i<n;i++){c^=b[i];for(let k=0;k<8;k++)c=(c&1)?((c>>>1)^0xA001):(c>>>1)}return c&0xFFFF}
+let crcT=null;
+function crc32(parts){ if(!crcT){crcT=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?(0xEDB88320^(c>>>1)):(c>>>1);crcT[n]=c>>>0}}
+  let c=0xFFFFFFFF;for(const b of parts){for(let i=0;i<b.length;i++)c=crcT[(c^b[i])&255]^(c>>>8)}return(c^0xFFFFFFFF)>>>0}
+function blBytes(src,dst){if(Math.abs(dst-(src+4))>=0x400000)throw new Error("salto troppo lontano per una BL Thumb (±4 MB): 0x"+src.toString(16)+" -> 0x"+dst.toString(16));const off=(dst-(src+4))>>1;const hi=0xF000|((off>>11)&0x7FF),lo=0xF800|(off&0x7FF);return[hi&255,hi>>8,lo&255,lo>>8]}
+function blDest(b,o,src){ // decodifica un salto 'bl' (Thumb); null se non lo è
+  const hi=u16(b,o),lo=u16(b,o+2); if((hi&0xF800)!==0xF000||(lo&0xF800)!==0xF800)return null;
+  let off=((hi&0x7FF)<<11)|(lo&0x7FF); if(off&0x200000)off-=0x400000; return src+4+off*2;
+}
+const eq=(b,o,arr)=>{for(let i=0;i<arr.length;i++)if(b[o+i]!==arr[i])return false;return true};
+
+/* ---------- file system NDS e NARC ---------- */
+function buildFS(rom){
+  const fnt=u32(rom,0x40), fat=u32(rom,0x48), files={};
+  function walk(dir,path,depth){
+    if(depth>12)return;
+    const e=fnt+(dir&0xFFF)*8; let sub=fnt+u32(rom,e), fid=u16(rom,e+4);
+    for(;;){
+      const t=rom[sub++]; if(!t)break;
+      const len=t&0x7F, name=asc(rom,sub,len); sub+=len;
+      if(t&0x80){const id=u16(rom,sub);sub+=2;walk(id,path+name+"/",depth+1)}
+      else{files[path+name]=[u32(rom,fat+fid*8),u32(rom,fat+fid*8+4),fid];fid++}
+    }
+  }
+  walk(0xF000,"",0);
+  return files;
+}
+function parseNarc(b){
+  if(asc(b,0,4)!=="NARC")throw new Error("non è un NARC");
+  let p=u16(b,12);
+  if(asc(b,p,4)!=="BTAF")throw new Error("BTAF mancante");
+  const n=u16(b,p+8), ent=[]; for(let i=0;i<n;i++)ent.push([u32(b,p+12+i*8),u32(b,p+16+i*8)]);
+  p+=u32(b,p+4); if(asc(b,p,4)!=="BTNF")throw new Error("BTNF mancante");
+  p+=u32(b,p+4); if(asc(b,p,4)!=="GMIF")throw new Error("GMIF mancante");
+  const base=p+8; return ent.map(([s,e])=>b.subarray(base+s,base+e));
+}
+/* ---------- testi Gen IV ---------- */
+function parseBank(b){
+  const n=u16(b,0), key=u16(b,2), out=[];
+  for(let i=1;i<=n;i++){
+    const k=((765*i*key)&0xFFFF)>>>0, k32=(k|(k<<16))>>>0;
+    const off=(u32(b,4+(i-1)*8)^k32)>>>0, len=(u32(b,8+(i-1)*8)^k32)>>>0;
+    let seed=(i*596947)&0xFFFF; const w=[];
+    for(let j=0;j<len;j++){w.push(u16(b,off+j*2)^seed);seed=(seed+18749)&0xFFFF}
+    out.push(decodeMsg(w));
+  }
+  return out;
+}
+function decodeMsg(w){
+  let s="";
+  if(w[0]===0xF100){
+    let bit=0,p=1;
+    for(;;){
+      let c=(w[p]>>bit)&0x1FF; bit+=9;
+      if(bit>=15){p++;bit-=15;if(bit!==0&&p<w.length)c|=(w[p]<<(9-bit))&0x1FF}
+      if(c===0x1FF)break; s+=CHARMAP[c]||""; if(p>=w.length)break;
+    }
+    return s.trim();
+  }
+  for(let j=0;j<w.length;j++){
+    const c=w[j];
+    if(c===0xFFFF)break;
+    if(c===0xFFFE){const na=w[j+2]||0;j+=2+na;continue}
+    if(CHARMAP[c]!==undefined)s+=CHARMAP[c];
+    else if(c===0xE000)s+=" ";
+  }
+  return s.trim();
+}
+
+/* ---------- stato ---------- */
+const S={rom:null,name:"",fs:null,arm9:0,trainers:[],texts:{},cfg:new Map(),sel:null,gen:null,opt:{}};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(t){const e=$("toast");e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,3800)}
+function setStep(n){document.querySelectorAll(".step").forEach(e=>{const s=+e.dataset.s;e.classList.toggle("on",s===n);e.classList.toggle("done",s<n)})}
+
+/* ---------- overlay sintetico di DSPRE ---------- */
+function readSyn(rom,a,fs){
+  const r={armOk:false,f:null,mem:null,len:0,narc:null}, asz=u32(rom,0x2C);
+  r.armOk=a+DSPRE_INIT.off+DSPRE_INIT.bytes.length<=a+asz&&eq(rom,a+DSPRE_BR.off,DSPRE_BR.bytes)&&eq(rom,a+DSPRE_INIT.off,DSPRE_INIT.bytes);
+  const f=fs&&fs[SYN_PATH];
+  if(f){try{const n=parseNarc(rom.subarray(f[0],f[1]));if(n.length>SYN_MEMBER){r.f=f;r.narc=n;r.mem=n[SYN_MEMBER];r.len=n[SYN_MEMBER].length}}catch(e){}}
+  return r;
+}
+// come FindFreeRegion di DSPRE: zona tutta a zero, allineata; cerco dall'alto per non toccare l'intestazione di hzla né le tabelle messe dall'inizio
+function findSynOffset(mem,len){
+  const size=Math.max(mem.length,SYN_SIZE);
+  for(let o=(size-len)&~15;o>=0;o-=16){let z=true;for(let i=0;i<len;i++){if((o+i<mem.length?mem[o+i]:0)!==0){z=false;break}}if(z)return o}
+  return -1;
+}
+/* ---------- regione di codice nell'ARM9 ---------- */
+// config: {list:[{id,slot,hp,st}], solo:[ID]} -> byte della regione e salti da scrivere
+function buildRegion(list,solo){
+  const blk=new Uint8Array(REGION), sites=[]; const A=n=>HOOK_ADDR+n;
+  if(!list.length&&!solo.length)return {blk,sites,used:0};
+  if(list.some(e=>!(e.id>0&&e.id<S.N0)||e.slot>5||e.hp>100||e.st>255||e.st<0))throw new Error("Condizione non codificabile (ID allenatore 1-"+(S.N0-1)+", slot 0-5, HP 0-100, stato 0-255)");
+  if(solo.some(id=>!(id>0&&id<S.N0)))throw new Error("ID allenatore non valido per la lotta doppia da soli");
+  if(CODE6.length>REGION)return null;
+  const c=CODE6.slice(),n0=S.N0>>>0;c[N6]=n0&255;c[N6+1]=(n0>>8)&255;c[N6+2]=(n0>>16)&255;c[N6+3]=(n0>>>24)&255;
+  blk.set(c,0); sites.push([0,A(0)],[1,A(O6_2)],[2,A(O6_3)]);
+  return {blk,sites,used:c.length};
+}
+function regionBytes(list,solo){const r=buildRegion(list,solo);return r}
+// legge l'iniettore già presente nella ROM; null = nessuno; {error} = non riconosciuto
+function readInjector(rom,a){
+  const list=[],solo=[],ranges=[]; let any=false,v3=false,N0=0,lay=0;
+  const regOff0=a+HOOK_OFF;
+  {
+    const stat0=SITES.map(s=>{const b=rom.subarray(a+s.off,a+s.off+4);return eq(b,0,s.orig)?null:blDest(b,0,s.addr)});
+    if(stat0.some(d=>d!==null&&d>=SYN_LOAD&&d<SYN_LOAD+SYN_SIZE*2)){
+      const syn=readSyn(rom,a,buildFS(rom));
+      if(!syn.armOk||!syn.mem)return{error:"I punti di aggancio puntano all'overlay sintetico di DSPRE, ma la patch «Expand ARM9» o il file weather_sys.narc non sono come previsto."};
+      const d0=stat0[0];
+      if(d0===null||d0<SYN_LOAD||stat0[1]!==d0+O6_2||stat0[2]!==d0+O6_3)return{error:"I punti di aggancio che puntano all'overlay sintetico non sono quelli di questa app."};
+      const off=d0-SYN_LOAD, m=syn.mem;
+      if(off<0||off+CODE6.length>m.length||(off&3)||!eq(m,off,Array.from(CODE6.subarray(0,N6)))||!eq(m,off+N6+4,Array.from(CODE6.subarray(N6+4))))return{error:"Nell'overlay sintetico, dove puntano i salti, non c'è il codice di questa app."};
+      return {list:[],solo:[],v3:true,v6:true,v7:true,synOff:off,N0:u32(m,off+N6),lay:4};
+    }
+  }
+  const regOff=a+HOOK_OFF, reg=rom.subarray(regOff,regOff+REGION);
+  const stat=SITES.map(s=>{const b=rom.subarray(a+s.off,a+s.off+4);return eq(b,0,s.orig)?null:blDest(b,0,s.addr)});
+  const inRegion=(d,len)=>d!==null&&d>=HOOK_ADDR&&d+len<=HOOK_ADDR+REGION&&((d-HOOK_ADDR)&3)===0;
+  if(stat[0]===HOOK_ADDR&&stat[1]===HOOK_ADDR+O6_2&&stat[2]===HOOK_ADDR+O6_3){
+    const ok6=eq(reg,0,Array.from(CODE6.subarray(0,N6)))&&eq(reg,N6+4,Array.from(CODE6.subarray(N6+4)));
+    if(!ok6)return{error:"I punti di aggancio sono quelli di questa app ma il codice nello spazio libero non lo è."};
+    for(let i=CODE6.length;i<REGION;i++)if(reg[i]!==0)return{error:"Nello spazio libero ci sono byte che non appartengono all'iniettore."};
+    return {list:[],solo:[],v3:true,v6:true,N0:u32(reg,N6),lay:4};
+  }
+  if(stat[0]!==null){any=true;
+    const s0=stat[0]-HOOK_ADDR, isV5=inRegion(stat[0],CODE1.length)&&eq(reg,s0,Array.from(CODE1.subarray(0,CODE1.length-4))), isV4b=!isV5&&inRegion(stat[0],CODE1_V4.length)&&eq(reg,s0,Array.from(CODE1_V4.subarray(0,CODE1_V4.length-4))), isV4=isV5||isV4b,
+      isV3o=!isV4&&inRegion(stat[0],CODE1_V3.length)&&eq(reg,s0,Array.from(CODE1_V3.subarray(0,CODE1_V3.length-4))), isV3=isV4||isV3o,
+      isNew=!isV3&&inRegion(stat[0],CODE1_V2.length+4)&&eq(reg,s0,Array.from(CODE1_V2)), isOld=!isV3&&!isNew&&inRegion(stat[0],CODE1_OLD.length+8)&&eq(reg,s0,Array.from(CODE1_OLD));
+    if(!isV3&&!isNew&&!isOld)return{error:"Il primo punto di aggancio è modificato ma il codice nello spazio libero non è quello di questa app."};
+    const C1=isV5?CODE1:isV4b?CODE1_V4:isV3o?CODE1_V3:isNew?CODE1_V2:CODE1_OLD; let p=s0+C1.length;ranges.push([s0,p]);
+    if(isV3){v3=true;lay=isV4?4:0;N0=u32(reg,s0+C1.length-4);ranges.push([p,p])}else
+    if(isNew){for(;p+4<=REGION;p+=4){const v=u32(reg,p);if(!v)break;list.push({id:v&1023,slot:(v>>>10)&7,hp:(v>>>13)&127,st:(v>>>20)&255})} ranges.push([s0+C1.length,p+4])}
+    else{for(;p+8<=REGION;p+=8){const id=u16(reg,p);if(!id)break;const st=u32(reg,p+4);if(id>1022||st>255||reg[p+2]>7||reg[p+3]>100)return{error:"Una condizione del vecchio formato non si può convertire."};list.push({id,slot:reg[p+2],hp:reg[p+3],st})} ranges.push([s0+C1.length,p+8])}
+  }
+  if(stat[1]!==null){any=true;
+    if(!inRegion(stat[1],CODE2.length+2)||!eq(reg,stat[1]-HOOK_ADDR,Array.from(CODE2)))return{error:"Il secondo punto di aggancio è modificato ma il suo codice non è quello di questa app."};
+    const s=stat[1]-HOOK_ADDR; let p=s+CODE2.length; ranges.push([s,p]);
+    for(;p+2<=REGION;p+=2){const id=u16(reg,p);if(!id)break;solo.push(id)} ranges.push([s+CODE2.length,p+2]);
+    if(stat[2]===null)return{error:"Il punto di aggancio della lotta doppia è a metà."};
+    const d3=stat[2]; if(!inRegion(d3,CODE3.length))return{error:"Il terzo punto di aggancio punta fuori dallo spazio previsto."};
+    const o3=d3-HOOK_ADDR, q=CODE3.length-8, tp=HOOK_ADDR+s+CODE2.length;
+    const ok=eq(reg,o3,Array.from(CODE3.subarray(0,q)))&&eq(reg,o3+q,[tp&255,(tp>>8)&255,(tp>>16)&255,(tp>>>24)&255])&&eq(reg,o3+q+4,Array.from(CODE3.subarray(q+4)));
+    if(!ok)return{error:"Il codice del terzo punto di aggancio non è quello di questa app."};
+    ranges.push([o3,o3+CODE3.length]);
+  }else if(stat[2]!==null)return{error:"Il punto di aggancio della lotta doppia è a metà."};
+  // fuori dai blocchi riconosciuti deve esserci solo zero
+  for(let i=0;i<REGION;i++){ if(reg[i]!==0&&!ranges.some(([a1,b1])=>i>=a1&&i<b1))return{error:"Nello spazio libero ci sono byte che non appartengono all'iniettore."}}
+  if(!any){ if(reg.some(v=>v!==0))return{error:"I 300 byte a 0x020F93D0 non sono vuoti: non è sicuro scriverci."}; return null }
+  return {list,solo,v3,N0,lay};
+}
+
+/* ---------- Step 1: validazione ---------- */
+async function loadRom(file,ov){
+  const box=$("checks"); box.hidden=false; $("goRow").hidden=true; box.innerHTML="";
+  const rows=[]; const add=(st,t,d)=>{rows.push({st,t,d});render()};
+  const render=()=>{box.innerHTML=rows.map(r=>`<div class="row"><span class="ic ${r.st}">${{ok:"✓",warn:"!",fail:"✕",run:"…"}[r.st]}</span><div><b>${esc(r.t)}</b><small>${esc(r.d||"")}</small></div></div>`).join("")};
+  let fatal=false; const fail=(t,d)=>{fatal=true;add("fail",t,d);toast(t+(d?": "+d:""))};
+  S.ready=false;
+  try{
+    add("run","Lettura del file",file.name+" · "+(file.size/1048576).toFixed(1)+" MB");
+    const rom=ov||new Uint8Array(await file.arrayBuffer()); rows.pop();
+    if(rom.length<0x200000){fail("File troppo piccolo","Non sembra una ROM Nintendo DS.");return}
+    add("ok","Dimensione",(rom.length/1048576).toFixed(0)+" MB");
+    const code=asc(rom,0x0C,4), title=asc(rom,0,12).replace(/\0/g,""), rev=rom[0x1E];
+    if(rom[0x12]!==0)fail("Intestazione NDS","Il tipo di console nell'intestazione non è quello di una ROM Nintendo DS.");
+    else add("ok","Intestazione NDS","Titolo «"+title+"», revisione "+rev);
+    if(code!=="CPUE")fail("Codice gioco "+code,"Serve Pokémon Platino americano (CPUE). Le altre versioni hanno indirizzi diversi e non vengono accettate.");
+    else add("ok","Codice gioco CPUE","Pokémon Platino, versione USA");
+    const hc=crc16(rom,0x15E), hcs=u16(rom,0x15E);
+    add(hc===hcs?"ok":"warn","Checksum dell'intestazione",hc===hcs?"Corretto":"Non coincide (0x"+hc.toString(16)+" invece di 0x"+hcs.toString(16)+"). Succede con alcune ROM modificate; non blocca.");
+    const off=u32(rom,0x20), ram=u32(rom,0x28), size=u32(rom,0x2C);
+    if(ram!==ARM9_BASE||off+size>rom.length||size<HOOK_OFF+REGION)
+      fail("Posizione dell'ARM9","L'ARM9 non è dove ci si aspetta o è troppo corto (indirizzo 0x"+ram.toString(16)+", "+size+" byte).");
+    else add("ok","ARM9 trovato","Offset 0x"+off.toString(16)+", "+size.toLocaleString("it-IT")+" byte, caricato a 0x02000000");
+    if(fatal)return;
+    const bad=SITES.filter(s=>{const b=rom.subarray(off+s.off,off+s.off+4);return !eq(b,0,s.orig)&&blDest(b,0,s.addr)===null});
+    if(bad.length)fail("ARM9 non riconosciuto","Il codice in "+bad.length+" dei 3 punti di aggancio non è quello atteso. Possibili cause: ARM9 compresso, ROM di un'altra versione o modificata in quei punti.");
+    else add("ok","ARM9 non compresso e codice riconosciuto","I 3 punti di aggancio contengono il codice originale del gioco o salti di questa app");
+    let inj=null;
+    if(!fatal){
+      inj=readInjector(rom,off);
+      if(inj&&inj.error)fail("Spazio dell'iniettore",inj.error);
+      else add("ok","Spazio libero per l'iniettore",inj?(inj.v7?"Iniettore già presente nell'overlay sintetico (offset 0x"+inj.synOff.toString(16)+"): le impostazioni verranno caricate nell'editor":inj.v6?"Iniettore già presente (versione con dati nei record della ROM): le impostazioni verranno caricate nell'editor":"Iniettore già presente ("+inj.list.length+" Pokémon, "+inj.solo.length+" allenatori in doppio da soli): verranno caricati nell'editor"):"300 byte a zero disponibili");
+    }
+    if(fatal)return;
+    add("run","Lettura dei file di gioco…","");
+    const fs=buildFS(rom);
+    const need={td:"poketool/trainer/trdata.narc",tp:"poketool/trainer/trpoke.narc",ms:"msgdata/pl_msg.narc"};
+    for(const k in need){if(!fs[need[k]]){fail("File mancante",need[k]);return}}
+    const nf=p=>{const[s,e]=fs[p];return parseNarc(rom.subarray(s,e))};
+    const td=nf(need.td), tp=nf(need.tp), ms=nf(need.ms);
+    rows.pop();
+    const T={}; for(const k in BANK){ if(!ms[BANK[k]]){fail("Testi mancanti","Gruppo di testi "+BANK[k]);return} T[k]=parseBank(ms[BANK[k]]) }
+    const mg=(i)=>i>0&&i<td.length&&td[i].length>=10&&asc(td[i],4,4)==="PTCX"&&u16(td[i],8)===i;
+    const N0=(inj&&inj.N0)||((td.length%2===0&&mg(td.length/2))?td.length/2:td.length);
+    if(inj&&inj.v3&&td.length<N0*2)fail("Record delle condizioni mancanti","Nella ROM c'è il codice di questa app ma il file degli allenatori non ha i record delle condizioni.");
+    S.N0=N0;
+    const soloFromTd=()=>{const o=[];for(let id=1;id<N0&&N0+id<td.length;id++)if(td[N0+id].length>=20&&u32(td[N0+id],16)!==0)o.push(id);return o};
+    const soloSet=new Set(inj?(inj.v6?soloFromTd():inj.solo):[]);
+    const trainers=parseTrainers(td,tp,T,soloSet);
+    if(trainers.length<100){fail("Allenatori","Ne ho letti solo "+trainers.length+": i dati non sembrano quelli di Platino.");return}
+    const nm=trainers.filter(t=>t.name).length;
+    add("ok","Allenatori letti",trainers.length+" allenatori, "+trainers.reduce((a,t)=>a+t.mons.length,0)+" Pokémon, "+nm+" con il nome");
+    T.abilities=ms[611]?parseBank(ms[611]):[];
+    let abil=null;const pf=fs["poketool/personal/pl_personal.narc"]||fs["poketool/personal/personal.narc"];
+    if(pf){try{abil=parseNarc(rom.subarray(pf[0],pf[1])).map(b=>b.length>=24?[b[22],b[23]]:[0,0])}catch(e){abil=null}}
+    add(abil&&T.abilities.length?"ok":"warn","Abilità",abil&&T.abilities.length?"Tabella dei Pokémon e nomi trovati: l'abilità si vede nell'editor":"Dati delle abilità non trovati: l'anteprima dell'abilità non si vedrà");
+    let mtype=null;const wz=fs["poketool/waza/pl_waza_tbl.narc"];
+    if(wz){try{mtype=parseNarc(rom.subarray(wz[0],wz[1])).map(b=>b.length>=5?b[4]:255)}catch(e){mtype=null}}
+    add(mtype?"ok":"warn","Tipi delle mosse",mtype?"Tabella delle mosse trovata: il tipo si vede accanto a ogni mossa":"Tabella delle mosse non trovata: i tipi non si vedranno");
+    let learn=null;const wf=fs["poketool/personal/wotbl.narc"];
+    if(wf){try{learn=parseNarc(rom.subarray(wf[0],wf[1])).map(b=>{const L=[];for(let i=0;i+1<b.length;i+=2){const v=u16(b,i);if(v===0xFFFF)break;L.push([v>>9,v&0x1FF])}return L})}catch(e){learn=null}}
+    add(learn?"ok":"warn","Mosse per livello",learn?"Tabella trovata: le mosse di default dei Pokémon vengono lette e mostrate":"Tabella non trovata: le mosse di default non si vedranno");
+    Object.assign(S,{rom,name:file.name,fs,arm9:off,trainers,texts:T,sel:null,gen:null,learn,abil,mtype,inj});
+    S.syn=readSyn(rom,off,fs); S.useSyn=!!(S.syn.armOk&&S.syn.mem);
+    if(S.useSyn&&ov&&S.expApplied)add("ok","Patch «Expand ARM9» applicata dall'app","Scritti 4 byte a 0xCB4 e 25 byte a 0x101574 dell'ARM9, come fa DSPRE. Va nella ROM esportata, non nel file originale.");
+    if(S.useSyn){
+      const sm=S.syn.mem, short=sm.length<SYN_SIZE, used=sm.some(v=>v!==0);
+      add(short&&used&&!(inj&&inj.v7)?"warn":"ok","Overlay sintetico di DSPRE","Trovata la patch «Expand ARM9»: il codice verrà scritto nel membro 9 di weather_sys.narc, che il gioco carica a 0x023C8000 all'avvio."+(short?" Il membro ("+sm.length+" byte) verrà ricreato da 88 KB a zero, come fa DSPRE"+(used?"; il suo contenuto attuale verrà sostituito.":"."):""));
+    }else if(!S.syn.armOk&&S.syn.mem&&eq(rom,off+DSPRE_BR.off,DSPRE_BR_ORIG)&&eq(rom,off+DSPRE_INIT.off,DSPRE_INIT_ORIG)){
+      fatal=true; add("warn","Manca la patch «Expand ARM9» di DSPRE","I due punti dell'ARM9 che DSPRE modifica sono ancora quelli originali di Platino USA. L'app può applicare la stessa patch al posto di DSPRE: scrive 4 byte a 0xCB4 e 25 byte a 0x101574 dell'ARM9, gli stessi di DSPRE. La ROM che hai caricato non viene modificata: la patch finisce solo nella ROM esportata.");
+      box.insertAdjacentHTML("beforeend",'<div class="acts" id="expAsk"><button class="btn pri" id="expYes">Applica Expand ARM9</button><button class="btn" id="expNo">Annulla</button></div>');
+      $("expYes").onclick=()=>{const r2=rom.slice(0);r2.set(DSPRE_BR.bytes,off+DSPRE_BR.off);r2.set(DSPRE_INIT.bytes,off+DSPRE_INIT.off);S.expApplied=true;loadRom(file,r2)};
+      $("expNo").onclick=()=>{$("expAsk").remove();toast("Senza la patch «Expand ARM9» l'editor non si apre.")};
+    }else fail("Serve la patch «Expand ARM9» di DSPRE",S.syn.armOk?"Manca il membro 9 di data/weather_sys.narc, dove va il codice.":"Questa ROM non ha l'overlay sintetico di DSPRE e non ha nemmeno i byte originali attesi nei due punti da modificare: apri la ROM con DSPRE, applica la patch «Expand ARM9» da Patch Toolbox, salva, poi ricaricala qui.");
+    S.cfg=new Map(); if(inj)for(const e of inj.list)S.cfg.set(e.id+":"+e.slot,{hp:e.hp||100,st:e.st});
+    if(inj&&inj.v3)for(let id=1;id<N0&&N0+id<td.length;id++){const r=td[N0+id];if(r.length<12+inj.lay)continue;for(let sl=0;sl<6;sl++){const e=u16(r,inj.lay+sl*2);if(e)S.cfg.set(id+":"+sl,{hp:(e&127)||100,st:(e>>7)&255,sh:e>>15})}}
+    if(fatal)return;
+    buildOptions(); S.ready=true;
+    try{openEditor()}catch(err){console.error(err);S.ready=false;$("v-ed").hidden=true;$("v-load").hidden=false;$("hAgain").hidden=true;$("bPatch").hidden=true;fail("Errore nell'apertura dell'editor",String(err&&err.message||err))}
+  }catch(err){console.error(err);fail("Errore di lettura",String(err&&err.message||err))}
+}
+function parseTrainers(td,tp,T,soloSet){
+  const out=[],n=Math.min(td.length,tp.length,S.N0||1e9),stride=[8,16,10,18];
+  for(let id=1;id<n;id++){
+    const h=td[id]; if(h.length<20)continue;
+    const type=h[0]&3, cls=h[1], size=h[3]; if(!size)continue;
+    const p=tp[id], mons=[], st=stride[type];
+    for(let i=0;i<size&&(i+1)*st<=p.length;i++){
+      const o=i*st, sp=u16(p,o+4), m={iv:u16(p,o),level:u16(p,o+2),species:sp&0x3FF,form:sp>>10,item:0,moves:[0,0,0,0],seal:u16(p,o+st-2)};
+      if(type===1){for(let k=0;k<4;k++)m.moves[k]=u16(p,o+6+k*2)}
+      else if(type===2){m.item=u16(p,o+6)}
+      else if(type===3){m.item=u16(p,o+6);for(let k=0;k<4;k++)m.moves[k]=u16(p,o+8+k*2)}
+      m.def=!(type&1); mons.push(m);
+    }
+    const bt=u32(h,16), hdrDouble=(bt&2)!==0, solo=soloSet.has(id);
+    const t={id,name:T.names[id]||"",cls:T.classes[cls]||("Classe "+cls),clsId:cls,mons,items:[u16(h,4),u16(h,6),u16(h,8),u16(h,10)],
+      ai:u32(h,12),bt,type,raw:Uint8Array.from(h.subarray(0,20)),double:hdrDouble||solo,paired:hdrDouble&&!solo};
+    t.snap0=snap(t); out.push(t);
+  }
+  return out;
+}
+const snap=t=>JSON.stringify([t.mons.map(m=>[m.species,m.form,m.level,m.item,m.def?"d":m.moves,m.iv,m.seal]),t.items,t.double]);
+// mosse di default del gioco: le ultime 4 imparate per livello fino al livello del Pokémon (tabella wotbl.narc)
+function defaultMoves(m){
+  const L=S.learn&&S.learn[m.species]; if(!L)return [0,0,0,0];
+  const mv=[]; for(const[lv,id]of L){ if(lv>m.level||mv.includes(id))continue; if(mv.length<4)mv.push(id); else{mv.shift();mv.push(id)} }
+  while(mv.length<4)mv.push(0); return mv;
+}
+const dataDirty=t=>snap(t)!==t.snap0;
+
+/* ---------- dati degli allenatori: serializzazione ---------- */
+function trainerFiles(t){
+  const hasMoves=t.mons.some(m=>!m.def), hasItem=t.mons.some(m=>m.item);
+  const type=(hasMoves?1:0)|(hasItem?2:0);
+  const hdr=Uint8Array.from(t.raw); hdr[0]=type; hdr[3]=t.mons.length;
+  t.items.forEach((v,i)=>{hdr[4+i*2]=v&255;hdr[5+i*2]=v>>8});
+  const bt=((t.bt&~2)|(t.double?2:0))>>>0; hdr[16]=bt&255;hdr[17]=(bt>>8)&255;hdr[18]=(bt>>16)&255;hdr[19]=(bt>>>24)&255;
+  const parts=[];
+  for(const m of t.mons){
+    const w=[m.iv,m.level,m.species|(m.form<<10)]; if(hasItem)w.push(m.item); if(hasMoves)w.push(...(m.def?defaultMoves(m):m.moves)); w.push(m.seal);
+    parts.push(...w);
+  }
+  let len=parts.length*2; len+=(-len)&3; const party=new Uint8Array(len);
+  parts.forEach((v,i)=>{party[i*2]=v&255;party[i*2+1]=(v>>8)&255});
+  return {hdr,party,type};
+}
+function validateTrainer(t){
+  const e=[], hasMoves=t.mons.some(m=>!m.def);
+  if(hasMoves&&t.mons.some(m=>m.def)&&!S.learn)e.push("tabella delle mosse per livello non trovata: con mosse personalizzate devi sceglierle per tutti i Pokémon");
+  if(t.mons.length<1||t.mons.length>6)e.push("numero di Pokémon non valido");
+  t.mons.forEach((m,i)=>{
+    if(m.species<1||m.species>493)e.push("Pokémon "+(i+1)+": specie non valida");
+    if(m.level<1||m.level>100)e.push("Pokémon "+(i+1)+": livello fuori da 1-100");
+    if(hasMoves&&!m.def&&!m.moves.some(x=>x))e.push("Pokémon "+(i+1)+": serve almeno una mossa (se un Pokémon ha mosse, le devono avere tutti)");
+  });
+  if(t.double&&!t.paired&&t.mons.length<2)e.push("la lotta doppia da soli funziona meglio con almeno 2 Pokémon");
+  return e;
+}
+
+/* ---------- opzioni dei menu ---------- */
+function buildOptions(){
+  const T=S.texts; S.lab={};S.rev={};
+  const mk=(kind,arr,from,to,none)=>{
+    const o=[];for(let i=from;i<=to&&i<arr.length;i++){if(arr[i]&&arr[i]!=="-"&&arr[i]!=="?")o.push([i,arr[i]])}
+    o.sort((a,b)=>a[1].localeCompare(b[1],"it"));
+    const seen=new Set(),lab=new Map(),rev=new Map(),list=[];
+    if(none){lab.set(0,none);rev.set(none.toLowerCase(),0);list.push(none)}
+    for(const[i,n]of o){const l=seen.has(n.toLowerCase())?n+" (#"+i+")":n;seen.add(n.toLowerCase());lab.set(i,l);rev.set(l.toLowerCase(),i);list.push(l)}
+    S.lab[kind]=lab;S.rev[kind]=rev;
+    return `<datalist id="dl-${kind}">`+list.map(l=>`<option value="${esc(l)}"></option>`).join("")+"</datalist>";
+  };
+  $("dls").innerHTML=mk("species",T.species,1,493,"")+mk("items",T.items,1,600,"— nessuno")+mk("moves",T.moves,1,600,"— nessuna");
+  S.opt={};
+}
+
+/* ---------- Step 2: editor ---------- */
+const key=(id,s)=>id+":"+s;
+const isMod=c=>c&&((c.hp&&c.hp<100)||c.st||c.sh);
+const nModTrainer=t=>t.mons.some((_,i)=>isMod(S.cfg.get(key(t.id,i))))||dataDirty(t);
+function entries(){
+  const out=[];
+  for(const t of S.trainers)t.mons.forEach((m,i)=>{const c=S.cfg.get(key(t.id,i));if(isMod(c))out.push({t,m,slot:i,id:t.id,hp:c.hp<100?c.hp:0,hpShown:c.hp||100,st:c.st||0,sh:c.sh?1:0})});
+  return out;
+}
+const soloIds=()=>S.trainers.filter(t=>t.double&&!t.paired).map(t=>t.id).sort((a,b)=>a-b);
+const curList=()=>entries().map(e=>({id:e.id,slot:e.slot,hp:e.hp,st:e.st}));
+const usedBytes=()=>{const r=buildRegion(curList(),soloIds());return r?r.used:REGION+1};
+function openEditor(){
+  $("v-load").hidden=true;$("v-ed").hidden=false;$("hAgain").hidden=false;$("bPatch").hidden=false;setStep(2);
+  const cls=[...new Map(S.trainers.map(t=>[t.clsId,t.cls])).entries()].sort((a,b)=>a[1].localeCompare(b[1],"it"));
+  $("fc").innerHTML='<option value="">Tutte le classi</option>'+cls.map(([i,n])=>`<option value="${i}">${esc(n)}</option>`).join("");
+  $("sT").textContent=S.trainers.length;$("sP").textContent=S.trainers.reduce((a,t)=>a+t.mons.length,0);
+  refreshProfiles();renderList();stats();
+  if(!S.sel)select(S.trainers[0].id);
+}
+function stats(){
+  $("sT").textContent=S.trainers.length;$("sP").textContent=S.trainers.reduce((a,t)=>a+t.mons.length,0);
+  $("sCT").textContent=S.trainers.filter(nModTrainer).length;
+  $("sCP").textContent=entries().length;
+  const u=usedBytes();$("sCap").textContent=S.useSyn?String(u):(u>REGION?"—":u)+"/"+REGION;
+}
+function renderList(){
+  const q=$("q").value.trim().toLowerCase(),fc=$("fc").value,so=$("so").value;
+  let L=S.trainers.filter(t=>(!fc||String(t.clsId)===fc)&&(!q||t.name.toLowerCase().includes(q)||String(t.id)===q||t.cls.toLowerCase().includes(q)));
+  if(so==="name")L=L.slice().sort((a,b)=>(a.name||"~").localeCompare(b.name||"~","it"));
+  if(so==="mod")L=L.slice().sort((a,b)=>nModTrainer(b)-nModTrainer(a)||a.id-b.id);
+  paint($("items"),L.length?L.map(t=>`<button class="it${t.id===S.sel?" sel":""}" data-id="${t.id}"><span class="n">${nModTrainer(t)?'<span class="dot"></span>':""}${esc(t.name||"(senza nome)")}</span><span class="id">ID ${t.id}</span><span class="c">${esc(t.cls)}</span><span class="cnt">${t.mons.length} Pokémon${t.double?" · doppio":""}</span></button>`).join(""):'<div class="empty">Nessun allenatore trovato.</div>',"items","x");
+}
+function select(id){S.sel=id;renderList();renderDet()}
+function sprite(sp){
+  if(sp<1||sp>493)return `<div class="spr none">#${sp}</div>`;
+  const c=(sp-1)%24,r=Math.floor((sp-1)/24);return `<div class="spr" style="background-position:-${c*80}px -${r*80}px" role="img" aria-label="Sprite specie ${sp}"></div>`;
+}
+const hpColor=p=>p>50?"var(--ok)":p>20?"var(--par)":"var(--bad)";
+const TYPES={0:["Normale","#A8A77A"],1:["Lotta","#C22E28"],2:["Volante","#A98FF3"],3:["Veleno","#A33EA1"],4:["Terra","#E2BF65"],5:["Roccia","#B6A136"],6:["Coleottero","#A6B91A"],7:["Spettro","#735797"],8:["Acciaio","#B7B7CE"],10:["Fuoco","#EE8130"],11:["Acqua","#6390F0"],12:["Erba","#7AC74C"],13:["Elettro","#F7D02C"],14:["Psico","#F95587"],15:["Ghiaccio","#96D9D6"],16:["Drago","#6F35FC"],17:["Buio","#705746"]};
+const typeBadge=mv=>{const ty=S.mtype&&mv?TYPES[S.mtype[mv]]:null;return ty?`<span class="tb" style="--tc:${ty[1]}" title="Tipo: ${ty[0]}">${ty[0]}</span>`:""};
+const PH={species:"Inserisci specie",items:"Inserisci strumento",moves:"Inserisci mossa"};
+const STLAB={none:"Nessuno",brn:"BRN",psn:"PSN",tox:"TOX",par:"PAR",slp:"SLP",frz:"FRZ"};
+const cmb=(f,v,kind,label,dis,ph)=>`<span class="cw${v?" has":""}${kind==="moves"&&typeBadge(v)?" hasT":""}">${kind==="moves"?typeBadge(v):""}<input class="cmb" type="text" list="dl-${kind}" data-k="${kind}" data-f="${f}" data-v="${v}" value="${esc(v?(S.lab[kind].get(v)||"#"+v):"")}" placeholder="${dis?"—":(ph||PH[kind])}" autocomplete="off" aria-label="${esc(label)}" ${dis?"disabled":""}>${dis||kind==="species"?"":'<button type="button" class="cx" tabindex="-1" aria-label="Svuota il campo (nessuna selezione)" title="Svuota il campo">×</button>'}</span>`;
+function renderDet(){
+  const t=S.trainers.find(x=>x.id===S.sel);if(!t)return;
+  const T=S.texts, d=dataDirty(t);
+  const html=`
+   <div class="dh"><div><h2>${esc(t.name||"(senza nome)")}</h2><div class="cls">${esc(t.cls)}</div></div>
+     <div class="seg" role="group" aria-label="Formato della lotta"><button class="sg" data-dbl="0" aria-pressed="${t.double?"false":"true"}" ${t.paired?"disabled":""}>Lotta in Singolo</button><button class="sg" data-dbl="1" aria-pressed="${t.double?"true":"false"}" ${t.paired?"disabled":""}>Lotta in Doppio</button></div>
+     <button class="btn sm rm" id="rTr">Resetta questo allenatore</button></div>
+   <div class="meta"${d?"":" hidden"}><span class="mod2">dati modificati</span></div>
+   <p class="pnote"${t.paired||t.double?"":" hidden"}>${t.paired?"Allenatore in coppia con un altro sulla mappa: il formato originale (doppio) non si cambia.":t.double?"Doppia da solo: usa il codice aggiunto dall'app.":""}</p>
+   <h3 class="sh">Strumenti usati dall'allenatore<span class="ct">${t.items.filter(Boolean).length}</span></h3>
+   <div class="opts"><div class="items4">${t.items.map((v,i)=>cmb("bag"+i,v,"items","Strumento "+(i+1),false,"Inserisci strumento "+(i+1))).join("")}</div></div>
+   <h3 class="sh">Pokémon usati dall'allenatore<span class="ct">${t.mons.length}</span></h3>
+   <div class="party">${t.mons.map((m,i)=>monCard(t,m,i)).join("")}${t.mons.length<6?'<button class="addmon" id="addMon">+ Aggiungi Pokémon</button>':""}</div>`;
+  paint($("det"),html,"det",S.sel);
+  $("det").querySelectorAll("select[data-v]").forEach(s=>{s.value=s.dataset.v});
+}
+function abilityLine(sp){
+  const a=S.abil&&S.abil[sp]; if(!a||!S.texts.abilities.length)return "";
+  const n=id=>id?(S.texts.abilities[id]||"Abilità "+id):"";
+  const a1=n(a[0]); if(!a1)return "";
+  const a2=a[1]&&a[1]!==a[0]?n(a[1]):"";
+  return `<div class="ab" title="${a2?"Abilità 2 (non usata dagli allenatori in Platino): "+esc(a2):"Questo Pokémon ha una sola abilità"}">${esc(a1)}</div>`;
+}
+function monCard(t,m,i){
+  const T=S.texts,c=S.cfg.get(key(t.id,i))||{hp:100,st:0},hp=c.hp||100;
+  return `<div class="mon${isMod(c)?" cust":""}" data-slot="${i}">
+   ${t.mons.length>1?`<button class="trash" data-rm="${i}" title="Rimuovi questo Pokémon" aria-label="Rimuovi il Pokémon dello slot ${i+1}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 11v6M14 11v6"/></svg></button>`:""}
+   <div class="mcol">
+     <div class="mtop" title="Slot ${i+1}">${sprite(m.species)}<span class="cw-wrap" style="display:contents">${cmb("species",m.species,"species","Specie").replace('class="cw','class="cw sp')}</span><input class="lvl" type="number" min="1" max="100" value="${m.level}" data-f="level" aria-label="Livello"></div>
+     <div class="abrow">${abilityLine(m.species)}</div>
+     <div class="mrow">${cmb("item",m.item,"items","Strumento tenuto",false,"Inserisci strumento")}
+       <div class="seg sm" role="group" aria-label="Shiny"><button class="sg" data-sh="0" aria-pressed="${c.sh?"false":"true"}">Default</button><button class="sg" data-sh="1" aria-pressed="${c.sh?"true":"false"}">✨ Shiny</button></div></div>
+     <div class="cond sec">
+       <label class="t">Pre-DMG</label>
+       <div class="hprow"><div class="hpbar" data-hpbar role="slider" tabindex="0" aria-label="HP iniziali: trascina per scegliere" aria-valuemin="1" aria-valuemax="100" aria-valuenow="${hp}" title="Trascina per scegliere la percentuale"><i style="width:${hp}%;background:${hpColor(hp)}"></i><b class="thumb" style="left:${hp}%"></b></div>
+         <span class="hpin"><input type="number" min="1" max="100" value="${hp}" data-hpin aria-label="HP personalizzati in percentuale"><span class="sub">%</span></span></div>
+       <div class="chips">${HP_PRESETS.map(p=>`<button class="cb pre" data-hp="${p}" aria-pressed="${hp===p}">${p}%</button>`).join("")}</div>
+     </div>
+     <div class="sec">
+       <label class="t">Pre-Status</label>
+       <div class="chips">${STATUSES.map(s=>`<button class="cb s${s.ic?" sic":""}" style="--sc:var(${s.c})" data-st="${s.v}" title="${s.label}" aria-label="${s.label}" aria-pressed="${(c.st||0)===s.v}">${s.ic?stBadge(s):STLAB[s.k]}</button>`).join("")}</div>
+     </div>
+   </div>
+   <div class="mcol">
+     <label class="t" style="margin:0">Mosse</label>
+     <div class="chk dm"><input type="checkbox" data-f="def" id="def${i}" ${m.def?"checked":""} ${S.learn||!m.def?"":"disabled"}><label for="def${i}"><b>Mosse di default</b> ${m.def&&!S.learn?'<span class="note">(tabella non trovata)</span>':""}</label></div>
+     <div class="mv4">${(m.def?defaultMoves(m):m.moves).map((v,k)=>cmb("mv"+k,v,"moves","Mossa "+(k+1),m.def)).join("")}</div>
+   </div></div>`;
+}
+function setCfg(id,slot,patch){
+  const k=key(id,slot),c=Object.assign({hp:100,st:0},S.cfg.get(k),patch),old=S.cfg.get(k);
+  if(isMod(c))S.cfg.set(k,c);else S.cfg.delete(k);
+  if(usedBytes()>REGION){ if(old)S.cfg.set(k,old);else S.cfg.delete(k); toast("Spazio finito nell'ARM9: il codice delle condizioni e gli allenatori in doppio da soli non entrano insieme.");return false }
+  S.gen=null;return true;
+}
+function remapAfterRemove(t,i){
+  const n=t.mons.length; // già rimosso: n è il nuovo numero
+  for(let s=i;s<=n;s++){const nx=S.cfg.get(key(t.id,s+1));if(nx)S.cfg.set(key(t.id,s),nx);else S.cfg.delete(key(t.id,s))}
+  S.cfg.delete(key(t.id,n));
+}
+function resetTrainer(t){
+  const o=JSON.parse(t.snap0);
+  t.mons=o[0].map(a=>({species:a[0],form:a[1],level:a[2],item:a[3],def:a[4]==="d",moves:a[4]==="d"?[0,0,0,0]:a[4].slice(),iv:a[5],seal:a[6]})); t.items=o[1].slice(); t.double=o[2];
+  t.mons.forEach((_,i)=>S.cfg.delete(key(t.id,i))); for(let s=t.mons.length;s<8;s++)S.cfg.delete(key(t.id,s));
+  S.gen=null;
+}
+/* ---------- scrittura dei dati degli allenatori dentro la ROM ---------- */
+const TD_PATH="poketool/trainer/trdata.narc", TP_PATH="poketool/trainer/trpoke.narc";
+function rebuildNarc(orig,entries){
+  const hdrSize=u16(orig,12), btaf=hdrSize, n=entries.length, btnf=btaf+u32(orig,btaf+4), btnfSize=u32(orig,btnf+4);
+  let off=0; const ents=entries.map(b=>{const r=[off,off+b.length];off+=(b.length+3)&~3;return r});
+  const btafSize=12+8*n, total=hdrSize+btafSize+btnfSize+8+off, out=new Uint8Array(total);
+  out.set(orig.subarray(0,hdrSize),0); out[8]=total&255;out[9]=(total>>8)&255;out[10]=(total>>16)&255;out[11]=(total>>>24)&255;
+  let p=hdrSize; out.set(new TextEncoder().encode("BTAF"),p);
+  const dv=new DataView(out.buffer); dv.setUint32(p+4,btafSize,true);dv.setUint16(p+8,n,true);dv.setUint16(p+10,0,true);
+  ents.forEach(([s,e],i)=>{dv.setUint32(p+12+i*8,s,true);dv.setUint32(p+16+i*8,e,true)});
+  p+=btafSize; out.set(orig.subarray(btnf,btnf+btnfSize),p); p+=btnfSize;
+  out.set(new TextEncoder().encode("GMIF"),p); dv.setUint32(p+4,8+off,true); p+=8;
+  entries.forEach((b,i)=>out.set(b,p+ents[i][0]));
+  return out;
+}
+function fixHeader(rom){const c=crc16(rom,0x15E);rom[0x15E]=c&255;rom[0x15F]=c>>8}
+// scrive nella ROM (una copia) i dati degli allenatori modificati; può restituire una ROM più lunga
+function placeNarc(rom,f,narc){
+  const oldLen=f[1]-f[0], fatOff=u32(rom,0x48), ent=fatOff+f[2]*8;
+  const wr32=(o,v)=>{rom[o]=v&255;rom[o+1]=(v>>8)&255;rom[o+2]=(v>>16)&255;rom[o+3]=(v>>>24)&255};
+  if(narc.length<=oldLen){rom.set(narc,f[0]);rom.fill(0,f[0]+narc.length,f[1]);wr32(ent+4,f[0]+narc.length);return rom}
+  // non entra: lo metto in fondo ai dati della ROM e aggiorno la tabella dei file
+  let maxEnd=Math.max(u32(rom,0x80),u32(rom,0x20)+u32(rom,0x2C)+12,u32(rom,0x30)+u32(rom,0x3C),u32(rom,0x40)+u32(rom,0x44),u32(rom,0x48)+u32(rom,0x4C),u32(rom,0x50)+u32(rom,0x54),u32(rom,0x58)+u32(rom,0x5C));
+  if(u32(rom,0x68))maxEnd=Math.max(maxEnd,u32(rom,0x68)+0x840);
+  const nFiles=u32(rom,0x4C)/8; for(let i=0;i<nFiles;i++)maxEnd=Math.max(maxEnd,u32(rom,fatOff+i*8+4));
+  const start=(maxEnd+0x1FF)&~0x1FF, end=start+narc.length;
+  if(end>rom.length){const r2=new Uint8Array((end+0x1FF)&~0x1FF);r2.set(rom);rom=r2}
+  rom.set(narc,start); wr32(ent,start); wr32(ent+4,end);
+  wr32(0x80,Math.max(u32(rom,0x80),(end+0x1FF)&~0x1FF)); fixHeader(rom);
+  return rom;
+}
+// record delle condizioni (20 byte): byte 0-3 = copia dell'intestazione dell'allenatore (così i programmi di editing li vedono validi),
+// byte 4-15 = 6 Pokémon x 2 byte (HP% in 7 bit + stato << 7). Il record dell'ID 0 contiene invece il marcatore con N.
+function condRecord(id,hdr4){
+  const r=new Uint8Array(20); if(hdr4)r.set(hdr4.subarray(0,4));
+  if(id===0){r.set(new TextEncoder().encode("PTCX"),4);r[8]=S.N0&255;r[9]=S.N0>>8;return r}
+  const tt=S.trainers.find(x=>x.id===id); if(tt&&tt.double&&!tt.paired)r[16]=2;   // lotta doppia da soli (parola a offset 16)
+  for(let sl=0;sl<6;sl++){const c=S.cfg.get(key(id,sl));if(!isMod(c))continue;const t=S.trainers.find(x=>x.id===id);if(!t||sl>=t.mons.length)continue;
+    const v=(((c.hp<100?c.hp:0)|(c.st<<7))&0x7FFF)|(c.sh?0x8000:0);r[4+sl*2]=v&255;r[5+sl*2]=v>>8}
+  return r;
+}
+// archivio dei nomi (testo 618) con N voci vuote in più, una per ogni record extra
+function namesBankExtended(b,N0){
+  const n0=u16(b,0), key=u16(b,2), total=N0*2; if(n0<N0)throw new Error("archivio dei nomi più corto del previsto");
+  const strs=[]; // dati cifrati originali di ogni voce (la cifratura dipende solo dall'indice)
+  for(let i=1;i<=N0;i++){const k=((765*i*key)&0xFFFF)>>>0,k32=(k|(k<<16))>>>0;const off=(u32(b,4+(i-1)*8)^k32)>>>0,len=(u32(b,8+(i-1)*8)^k32)>>>0;strs.push(b.subarray(off,off+len*2))}
+  for(let i=N0+1;i<=total;i++){const seed=(i*596947)&0xFFFF,w=new Uint8Array(2);const v=0xFFFF^seed;w[0]=v&255;w[1]=v>>8;strs.push(w)}
+  let size=4+total*8;for(const s of strs)size+=s.length;
+  const out=new Uint8Array(size),dv=new DataView(out.buffer);dv.setUint16(0,total,true);dv.setUint16(2,key,true);
+  let off=4+total*8;
+  strs.forEach((s,idx)=>{const i=idx+1,k=((765*i*key)&0xFFFF)>>>0,k32=(k|(k<<16))>>>0;
+    dv.setUint32(4+idx*8,(off^k32)>>>0,true);dv.setUint32(8+idx*8,((s.length/2)^k32)>>>0,true);out.set(s,off);off+=s.length});
+  return out;
+}
+// scrive nella ROM (una copia) i dati degli allenatori modificati e i record delle condizioni; può restituire una ROM più lunga
+function applyData(rom0){
+  const D=S.trainers.filter(dataDirty), N0=S.N0, hasList=curList().length>0;
+  let rom=rom0; const fs=buildFS(rom), tdF=fs[TD_PATH], tpF=fs[TP_PATH], msF=fs["msgdata/pl_msg.narc"];
+  const td=parseNarc(rom.subarray(tdF[0],tdF[1])), tp=parseNarc(rom.subarray(tpF[0],tpF[1])), ms=parseNarc(rom.subarray(msF[0],msF[1]));
+  const wantExtras=hasList||soloIds().length>0||td.length>N0;
+  if(!D.length&&!wantExtras)return rom0;
+  let rebuild=false; const fl=new Map();
+  for(const t of D){
+    const f=trainerFiles(t); fl.set(t.id,f);
+    if(td[t.id].length<20)throw new Error("intestazione di "+t.id+" troppo corta");
+    td[t.id].set(f.hdr);
+    if(f.party.length<=tp[t.id].length){tp[t.id].fill(0);tp[t.id].set(f.party)}else rebuild=true;
+  }
+  const tdOrig=Uint8Array.from(rom.subarray(tdF[0],tdF[1])), tpOrig=Uint8Array.from(rom.subarray(tpF[0],tpF[1])), msOrig=Uint8Array.from(rom.subarray(msF[0],msF[1]));
+  const tdBase=[],tpBase=[];
+  for(let i=0;i<N0;i++){tdBase.push(Uint8Array.from(td[i]));tpBase.push(fl.has(i)&&fl.get(i).party.length>tp[i].length?fl.get(i).party:Uint8Array.from(tp[i]))}
+  let tdEntries=null,tpEntries=null,msEntries=null;
+  if(wantExtras){
+    tdEntries=tdBase.concat(tdBase.map((h,i)=>condRecord(i,h)));
+    tpEntries=tpBase.concat(tpBase.map(b=>Uint8Array.from(b)));
+    msEntries=ms.map(b=>Uint8Array.from(b)); msEntries[BANK.names]=namesBankExtended(ms[BANK.names],N0);
+  }else if(rebuild)tpEntries=tpBase;
+  if(tdEntries)rom=placeNarc(rom,tdF,rebuildNarc(tdOrig,tdEntries));
+  if(tpEntries)rom=placeNarc(rom,tpF,rebuildNarc(tpOrig,tpEntries));
+  if(msEntries)rom=placeNarc(rom,msF,rebuildNarc(msOrig,msEntries));
+  return rom;
+}
+// confronta i record delle condizioni nella ROM con quelli dell'editor
+function verifyConds(rom){
+  const bad=[],fs=buildFS(rom),td=parseNarc(rom.subarray(fs[TD_PATH][0],fs[TD_PATH][1])),N0=S.N0;
+  if(td.length<2*N0)return["il file degli allenatori non ha i record"];
+  for(let id=0;id<N0;id++){const w=condRecord(id,td[id]),r=td[N0+id];if(r.length<20||w.some((v,i)=>r[i]!==v))bad.push("ID "+id)}
+  return bad;
+}
+// rilegge i dati degli allenatori da una ROM e li confronta con quelli dell'editor
+function verifyData(rom){
+  const fs=buildFS(rom), td=parseNarc(rom.subarray(fs[TD_PATH][0],fs[TD_PATH][1])), tp=parseNarc(rom.subarray(fs[TP_PATH][0],fs[TP_PATH][1]));
+  const solo=new Set(soloIds()), back=parseTrainers(td,tp,S.texts,solo), bad=[];
+  if(back.length!==S.trainers.length)bad.push("numero di allenatori diverso");
+  for(const t of S.trainers){const b=back.find(x=>x.id===t.id);if(!b||snap(b)!==snap(t))bad.push("ID "+t.id)}
+  // i testi: tutti i gruppi uguali all'originale, tranne i nomi che hanno solo voci vuote in più
+  const m0=parseNarc(rom.subarray(fs["msgdata/pl_msg.narc"][0],fs["msgdata/pl_msg.narc"][1])), m1=parseNarc(S.rom.subarray(S.fs["msgdata/pl_msg.narc"][0],S.fs["msgdata/pl_msg.narc"][1]));
+  let msgOk=m0.length===m1.length;
+  for(let i=0;msgOk&&i<m1.length;i++){
+    if(i===BANK.names){const a=parseBank(m0[i]),b=parseBank(m1[i]);if(a.length<b.length||b.some((s,k)=>a[k]!==s)||a.slice(b.length).some(s=>s!==""))msgOk=false;continue}
+    if(m0[i].length!==m1[i].length||m0[i].some((v,k)=>v!==m1[i][k]))msgOk=false;
+  }
+  return {bad,msgOk};
+}
+
+/* ---------- patch ---------- */
+const NOSOLO=[];
+function patchedRom(list,solo,withData){
+  let rom=S.rom.slice(0);const a=S.arm9;
+  if(S.useSyn){
+    const need=list.length>0||solo.length>0;
+    // un vecchio iniettore nell'ARM9 viene tolto: lo spazio torna a zero
+    if(S.inj&&!S.inj.v7)rom.fill(0,a+HOOK_OFF,a+HOOK_OFF+REGION);
+    const oldOff=S.inj&&S.inj.v7?S.inj.synOff:-1;
+    let mem; if(S.syn.mem.length<SYN_SIZE)mem=new Uint8Array(SYN_SIZE); else mem=Uint8Array.from(S.syn.mem);   // come DSPRE: se è più corto lo ricrea da 88 KB a zero
+    let sites=[];
+    if(need){
+      const off=oldOff>=0?oldOff:findSynOffset(mem,CODE6.length);
+      if(off<0)throw new Error("spazio insufficiente nell'overlay sintetico");
+      const r=buildRegion(list,solo); if(!r)throw new Error("codice non valido");
+      mem.set(r.blk.subarray(0,CODE6.length),off); sites=r.sites.map(([i,ad])=>[i,ad-HOOK_ADDR+SYN_LOAD+off]);
+    }else if(oldOff>=0)mem.fill(0,oldOff,oldOff+CODE6.length);
+    SITES.forEach((s,i)=>{const f=sites.find(x=>x[0]===i);rom.set(f?blBytes(s.addr,f[1]):s.orig,a+s.off)});
+    const same=mem.length===S.syn.mem.length&&mem.every((v,i)=>v===S.syn.mem[i]);
+    if(!same){
+      const ent=S.syn.narc.map(b=>Uint8Array.from(b)); ent[SYN_MEMBER]=mem;
+      rom=placeNarc(rom,S.syn.f,rebuildNarc(Uint8Array.from(S.rom.subarray(S.syn.f[0],S.syn.f[1])),ent));
+    }
+  }else{
+    const r=buildRegion(list,solo);
+    if(!r)throw new Error("spazio insufficiente");
+    rom.set(r.blk,a+HOOK_OFF);
+    SITES.forEach((s,i)=>{const f=r.sites.find(x=>x[0]===i);rom.set(f?blBytes(s.addr,f[1]):s.orig,a+s.off)});
+  }
+  return withData?applyData(rom):rom;
+}
+const statusName=v=>(STATUSES.find(s=>s.v===v)||{label:"Stato 0x"+v.toString(16)}).label;
+function renderDrawer(){
+  const e=entries(),solo=soloIds(),u=usedBytes();
+  $("dCount").textContent=e.length;$("dSolo").textContent=solo.length;$("dCap").textContent=S.useSyn?(u?u+" byte (overlay)":"nessuno"):(u>REGION?"troppi":u)+" / "+REGION;$("dBar").style.width=S.useSyn?(u?"3%":"0%"):Math.min(100,u/REGION*100)+"%";
+  $("dTable").innerHTML=e.length?`<tr><th>Allenatore</th><th>ID</th><th>Slot</th><th>Pokémon</th><th>HP iniziali</th><th>Stato</th></tr>`+e.map(x=>`<tr><td>${esc(x.t.name||"(senza nome)")}</td><td class="mono">${x.id}</td><td>${x.slot+1}</td><td>${esc(S.texts.species[x.m.species]||"")} Lv. ${x.m.level}</td><td>${x.hpShown}%</td><td>${statusName(x.st)}</td></tr>`).join(""):`<tr><td class="note">Nessuna condizione impostata.</td></tr>`;
+  const D=S.trainers.filter(dataDirty);
+  $("dData").innerHTML=D.length?`<tr><th>Allenatore</th><th>ID</th><th>Squadra</th><th>Doppio</th><th>File</th></tr>`+D.map(t=>`<tr><td>${esc(t.name||"(senza nome)")}</td><td class="mono">${t.id}</td><td>${t.mons.map(m=>esc(S.texts.species[m.species]||"?")+" Lv."+m.level).join(", ")}</td><td>${t.double?(t.paired?"in coppia":"da solo"):"no"}</td><td class="mono">${String(t.id).padStart(4,"0")}</td></tr>`).join(""):`<tr><td class="note">Nessun allenatore con dati modificati.</td></tr>`;
+  $("dChecks").innerHTML="";$("bIps").disabled=true;$("bRom").disabled=true;$("bData").disabled=true;$("dNote").textContent="";
+}
+function generate(){
+  const list=curList(),solo=soloIds(),out=[];
+  const add=(st,t,d)=>out.push(`<div class="row" style="display:grid;grid-template-columns:22px 1fr;gap:10px"><span class="ic ${st}">${{ok:"✓",fail:"✕",warn:"!"}[st]}</span><div><b>${esc(t)}</b><div class="note">${esc(d)}</div></div></div>`);
+  let okA=true,okD=true;
+  const r=buildRegion(list,solo);
+  if(!r){add("fail","Spazio insufficiente","Le condizioni e i doppi impostati non entrano nei 300 byte liberi dell'ARM9.");okA=false}
+  else{
+    const rom=patchedRom(list,solo,true),a=S.arm9, hasData=S.trainers.some(dataDirty)||list.length>0||solo.length>0;
+    const back=readInjector(rom,a);
+    const backOk=back&&!back.error;
+    const condOK=(list.length||solo.length)?(backOk&&back.v3&&back.N0===S.N0&&(!S.useSyn||back.v7)&&verifyConds(rom).length===0):(back===null||(backOk&&!back.list.length));
+    const soloOK=backOk?(back.v6||(back.solo.length===solo.length&&back.solo.every((v,i)=>v===solo[i]))):solo.length===0;
+    const same=condOK&&soloOK;
+    add(same?"ok":"fail","Codice e condizioni riletti dalla ROM",same?(list.length+" Pokémon con condizioni (nei record della ROM), "+solo.length+" allenatori in doppio da soli, "+r.used+(S.useSyn?" byte nell'overlay sintetico":" byte usati su "+REGION+" nell'ARM9")):"Quello che si rilegge dalla ROM patchata non coincide con quello impostato");
+    const changed=new Set();for(const[s,i]of[[0,0]]);
+    let outside=true;
+    if(!hasData){const lo=a+HOOK_OFF,hi=lo+REGION;
+     const siteRanges=SITES.map(s=>[a+s.off,a+s.off+4]); if(S.useSyn&&S.syn.f)siteRanges.push([S.syn.f[0],S.syn.f[1]]);
+     for(let i=0;i<S.rom.length;i++){ if(rom[i]===S.rom[i])continue; if(i>=lo&&i<hi)continue; if(siteRanges.some(([x,y])=>i>=x&&i<y))continue; outside=false;break }
+     add(outside?"ok":"fail","Nessun altro byte modificato",outside?"Il resto della ROM è identico all'originale":"Sono cambiati byte fuori dai punti previsti");
+    }else{
+     let v;try{v=verifyData(rom)}catch(e){v={bad:["errore: "+e.message],msgOk:false}}
+     outside=v.bad.length===0&&v.msgOk;
+     add(outside?"ok":"fail","Dati degli allenatori riletti dalla ROM",outside?"Tutti gli allenatori riletti dalla ROM patchata coincidono con l'editor e i testi non sono cambiati":"Differenze: "+v.bad.slice(0,8).join(", ")+(v.msgOk?"":" · i testi sono cambiati"));
+     add(rom.length===S.rom.length?"ok":"warn","Dimensione della ROM",rom.length===S.rom.length?"Invariata":"La ROM è più grande di "+(rom.length-S.rom.length)+" byte perché i dati dei nuovi Pokémon non entravano nello spazio originale");
+    }
+    okA=same&&outside;
+  }
+  const D=S.trainers.filter(dataDirty);
+  if(D.length){
+    const errs=[];for(const t of D){for(const e of validateTrainer(t))errs.push((t.name||("ID "+t.id))+": "+e)}
+    const hard=errs.filter(x=>!x.includes("funziona meglio"));
+    if(hard.length){okD=false;add("fail","Dati degli allenatori non validi",hard.join(" · "))}
+    else add("ok","Dati degli allenatori",D.length+" allenatori da esportare come file per DSPRE");
+    errs.filter(x=>x.includes("funziona meglio")).forEach(x=>add("warn","Attenzione",x));
+  }
+  S.gen=okA?{list,solo,a:S.arm9}:null;
+  $("dChecks").innerHTML=out.join("");
+  $("bIps").disabled=!okA||list.length>0||solo.length>0||S.useSyn;$("bRom").disabled=!okA;$("bData").disabled=!(D.length&&okD);
+  $("dNote").textContent=(okA||(D.length&&okD))?"Scegli cosa salvare. La ROM patchata contiene tutto: codice (overlay sintetico di DSPRE, o ARM9 se manca la patch) e dati degli allenatori. La patch IPS non è disponibile quando ci sono condizioni (i dati stanno nella ROM). I file per DSPRE servono se preferisci modificare le cartelle estratte.":"Controllo non superato: non salvare nulla.";
+}
+/* zip senza compressione */
+function zipMany(files){
+  const loc=[],cen=[];let off=0;
+  const d=new Date(),dt=((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate(),tm=(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1);
+  for(const[n,b]of files){
+    const e=new TextEncoder().encode(n),c=crc32([b]);
+    const lh=new DataView(new ArrayBuffer(30));lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(10,tm,true);lh.setUint16(12,dt,true);lh.setUint32(14,c,true);lh.setUint32(18,b.length,true);lh.setUint32(22,b.length,true);lh.setUint16(26,e.length,true);
+    const ch=new DataView(new ArrayBuffer(46));ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(12,tm,true);ch.setUint16(14,dt,true);ch.setUint32(16,c,true);ch.setUint32(20,b.length,true);ch.setUint32(24,b.length,true);ch.setUint16(28,e.length,true);ch.setUint32(42,off,true);
+    loc.push(lh,e,b);cen.push(ch,e);off+=30+e.length+b.length;
+  }
+  const cl=cen.reduce((n,x)=>n+(x.byteLength??x.length),0);
+  const ee=new DataView(new ArrayBuffer(22));ee.setUint32(0,0x06054b50,true);ee.setUint16(8,files.length,true);ee.setUint16(10,files.length,true);ee.setUint32(12,cl,true);ee.setUint32(16,off,true);
+  return new Blob([...loc,...cen,ee],{type:"application/zip"});
+}
+function zipBlob(name,parts,len,crc){
+  const enc=new TextEncoder().encode(name),d=new Date(),dt=((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate(),tm=(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1);
+  const lh=new DataView(new ArrayBuffer(30));
+  lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(10,tm,true);lh.setUint16(12,dt,true);lh.setUint32(14,crc,true);lh.setUint32(18,len,true);lh.setUint32(22,len,true);lh.setUint16(26,enc.length,true);
+  const ch=new DataView(new ArrayBuffer(46));
+  ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(12,tm,true);ch.setUint16(14,dt,true);ch.setUint32(16,crc,true);ch.setUint32(20,len,true);ch.setUint32(24,len,true);ch.setUint16(28,enc.length,true);
+  const cdOff=30+enc.length+len,cdLen=46+enc.length;
+  const ee=new DataView(new ArrayBuffer(22));ee.setUint32(0,0x06054b50,true);ee.setUint16(8,1,true);ee.setUint16(10,1,true);ee.setUint32(12,cdLen,true);ee.setUint32(16,cdOff,true);
+  return new Blob([lh,enc,...parts,ch,enc,ee],{type:"application/zip"});
+}
+async function save(filename,data){
+  let dl=null;try{dl=await claude.use("downloads")}catch(e){}
+  if(!dl){ // fuori da Claude (versione locale/desktop): download normale del browser
+    try{const blob=data instanceof Blob?data:new Blob([data]),u=URL.createObjectURL(blob),x=document.createElement("a");x.href=u;x.download=filename;document.body.appendChild(x);x.click();x.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);toast("File salvato: "+filename)}
+    catch(e){toast("Salvataggio non riuscito: "+(e&&e.message||e))}
+    return}
+  try{const r=await dl.save({filename,data});toast(r.status==="saved"?"File salvato.":"File consegnato.")}
+  catch(e){toast(e&&e.code==="declined"?"Salvataggio annullato.":"Salvataggio non riuscito: "+(e&&e.message||e))}
+}
+function ipsParts(list,solo,a){
+  const r=buildRegion(list,solo),recs=[[a+HOOK_OFF,r.blk]];
+  SITES.forEach((s,i)=>{const f=r.sites.find(x=>x[0]===i);recs.push([a+s.off,Uint8Array.from(f?blBytes(s.addr,f[1]):s.orig)])});
+  const parts=[new TextEncoder().encode("PATCH")];
+  for(const[off,b]of recs){if(off>0xFFFFFF||off===0x454F46)throw new Error("offset non supportato da IPS");parts.push(Uint8Array.from([off>>16,(off>>8)&255,off&255,b.length>>8,b.length&255]),b)}
+  parts.push(new TextEncoder().encode("EOF"));return parts;
+}
+const base=()=>S.name.replace(/\.[^.]+$/,"");
+async function saveIps(){
+  if(!S.gen)return;const parts=ipsParts(S.gen.list,S.gen.solo,S.gen.a),len=parts.reduce((n,p)=>n+p.length,0);
+  const ips=new Uint8Array(len);let o=0;for(const p of parts){ips.set(p,o);o+=p.length}
+  const readme=new TextEncoder().encode("Patch IPS per Pokémon Platino (USA): HP e stato iniziali, lotta doppia da soli.\r\nApplicala alla stessa ROM che hai caricato nell'app (stesso file, stessa dimensione).\r\nPokémon con condizioni: "+S.gen.list.length+"\r\nAllenatori in doppio da soli: "+S.gen.solo.length+"\r\n");
+  await save("condizioni_allenatori_patch.zip",zipMany([["condizioni_allenatori.ips",ips],["LEGGIMI.txt",readme]]));
+}
+async function saveRom(){
+  if(!S.gen)return;$("dNote").textContent="Preparo la ROM… può richiedere qualche secondo.";
+  await new Promise(r=>setTimeout(r,30));
+  const r=patchedRom(S.gen.list,S.gen.solo,true),crc=crc32([r]),name=base()+"_patched.nds";
+  await save(base()+"_patched.zip",zipBlob(name,[r],r.length,crc));
+  $("dNote").textContent="Dentro lo zip trovi "+name+". La ROM originale non è stata modificata.";
+}
+async function saveData(){
+  const D=S.trainers.filter(dataDirty);if(!D.length)return;
+  const files=[];
+  for(const t of D){const f=trainerFiles(t),n=String(t.id).padStart(4,"0");files.push(["trainerProperties/"+n,f.hdr],["trainerParty/"+n,f.party])}
+  const readme=new TextEncoder().encode("File degli allenatori modificati.\r\nCopia i file nelle cartelle omonime dentro 'unpacked' della tua ROM estratta con DSPRE, sostituendo quelli con lo stesso numero (fai prima una copia di quelli originali). Poi ricostruisci la ROM.\r\nAllenatori: "+D.map(t=>t.id).join(", ")+"\r\n");
+  files.push(["LEGGIMI.txt",readme]);
+  await save("allenatori_modificati.zip",zipMany(files));
+}
+
+/* ---------- profili ---------- */
+function profileObj(){return{app:"platino-trainer-conditions",version:2,game:"CPUE",entries:entries().map(e=>({id:e.id,slot:e.slot,hp:e.hpShown,status:e.st,shiny:e.sh?1:0})),
+  trainers:S.trainers.filter(dataDirty).map(t=>({id:t.id,double:t.double,items:t.items,mons:t.mons.map(m=>({species:m.species,form:m.form,level:m.level,item:m.item,def:!!m.def,moves:m.moves,iv:m.iv,seal:m.seal}))}))}}
+function applyProfile(p){
+  if(!p||p.app!=="platino-trainer-conditions"||!Array.isArray(p.entries))throw new Error("file non valido");
+  S.trainers.forEach(resetTrainer);
+  let skip=0;
+  for(const d of (p.trainers||[])){
+    const t=S.trainers.find(x=>x.id===d.id);if(!t||!Array.isArray(d.mons)||!d.mons.length||d.mons.length>6){skip++;continue}
+    t.mons=d.mons.map(m=>({species:m.species|0,form:m.form|0,level:m.level|0,item:m.item|0,moves:[0,1,2,3].map(k=>(m.moves&&m.moves[k])|0),def:m.def===undefined?![0,1,2,3].some(k=>(m.moves&&m.moves[k])|0):!!m.def,iv:m.iv|0,seal:m.seal|0}));
+    t.items=[0,1,2,3].map(k=>(d.items&&d.items[k])|0); if(!t.paired)t.double=!!d.double;
+  }
+  S.cfg=new Map();
+  for(const e of p.entries){const t=S.trainers.find(x=>x.id===e.id);if(!t||e.slot>=t.mons.length){skip++;continue}
+    const c={hp:Math.min(100,Math.max(1,e.hp|0))||100,st:e.status|0,sh:e.shiny?1:0};if(isMod(c)){S.cfg.set(key(e.id,e.slot),c)}}
+  if(usedBytes()>REGION){S.cfg=new Map();skip+=1;toast("Il profilo non entra nello spazio disponibile: condizioni non caricate.")}
+  S.gen=null;renderList();renderDet();stats();renderDrawer();
+  toast(skip?"Profilo caricato, "+skip+" voci ignorate.":"Profilo caricato.");
+}
+function profs(){try{return JSON.parse(localStorage.getItem("ptc-profiles")||"{}")}catch(e){return{}}}
+function refreshProfiles(){const P=profs(),k=Object.keys(P);$("pSel").innerHTML=k.length?k.map(n=>`<option>${esc(n)}</option>`).join(""):'<option value="">Nessun profilo salvato</option>'}
+
+/* ---------- eventi ---------- */
+$("pick").onclick=()=>$("file").click();
+$("file").onchange=e=>{const f=e.target.files[0];if(f){S.expApplied=false;loadRom(f)}};
+$("again").onclick=()=>{$("file").value="";$("checks").hidden=true;$("goRow").hidden=true;$("file").click()};
+$("go").onclick=openEditor;
+$("hAgain").onclick=()=>{$("v-ed").hidden=true;$("v-load").hidden=false;$("hAgain").hidden=true;$("bPatch").hidden=true;$("drawer").hidden=true;$("checks").hidden=true;$("goRow").hidden=true;$("file").value="";setStep(1);$("file").click()};
+const dz=$("drop");
+["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("over")}));
+["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("over")}));
+dz.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f){S.expApplied=false;loadRom(f)}});
+["q","fc","so"].forEach(i=>$(i).addEventListener("input",renderList));
+$("q").addEventListener("input",()=>$("sw").classList.toggle("has",!!$("q").value));
+$("qx").addEventListener("mousedown",e=>e.preventDefault());
+$("qx").onclick=()=>{const q=$("q");q.value="";q.dispatchEvent(new Event("input",{bubbles:true}));q.focus()};
+$("items").onclick=e=>{const b=e.target.closest(".it");if(b)select(+b.dataset.id)};
+function refresh(){renderDet();renderList();stats()}
+/* aggiorna il DOM esistente invece di ricrearlo, così le transizioni CSS animano da uno stato all'altro */
+const PAINT={};
+function morphKids(a,b){const ac=[...a.childNodes],bc=[...b.childNodes];
+  bc.forEach((n,i)=>{if(i<ac.length)morph(ac[i],n);else a.appendChild(n)});
+  for(let i=bc.length;i<ac.length;i++)ac[i].remove()}
+function morph(a,b){
+  if(a.nodeName!==b.nodeName){a.replaceWith(b);return}
+  if(a.nodeType!==1){if(a.data!==b.data)a.data=b.data;return}
+  for(const at of [...a.attributes])if(!b.hasAttribute(at.name))a.removeAttribute(at.name);
+  for(const at of b.attributes)if(a.getAttribute(at.name)!==at.value)a.setAttribute(at.name,at.value);
+  if(a.nodeName==="INPUT"){const v=b.getAttribute("value");a.value=v===null?"":v;if(a.type==="checkbox")a.checked=b.hasAttribute("checked")}
+  morphKids(a,b)}
+function paint(el,html,id,sig){
+  const tpl=document.createElement("template");tpl.innerHTML=html;
+  if(PAINT[id]===sig&&el.firstElementChild){morphKids(el,tpl.content)}
+  else{el.replaceChildren(tpl.content);PAINT[id]=sig;if(id==="det"){el.classList.remove("in");void el.offsetWidth;el.classList.add("in")}}
+}
+function setDouble(t,v){const prev=t.double;t.double=v;
+  if(usedBytes()>REGION){t.double=prev;toast("Spazio finito: non c'è posto per un altro allenatore in doppio.")}
+  S.gen=null;refresh()}
+$("det").addEventListener("mousedown",e=>{if(e.target.closest&&e.target.closest(".cx"))e.preventDefault()});
+$("det").addEventListener("click",e=>{
+  const cx=e.target.closest&&e.target.closest(".cx");
+  if(cx){const inp=cx.parentNode.querySelector(".cmb");inp.value=S.lab[inp.dataset.k].get(0)||"";inp.dispatchEvent(new Event("change",{bubbles:true}));return}
+  const t=S.trainers.find(x=>x.id===S.sel);if(!t)return;
+  if(e.target.id==="rTr"){resetTrainer(t);refresh();return}
+  const dg=e.target.closest("[data-dbl]");
+  if(dg){if(!dg.disabled)setDouble(t,dg.dataset.dbl==="1");return}
+  if(e.target.id==="addMon"){const l=t.mons[t.mons.length-1];t.mons.push({species:l.species,form:0,level:l.level,item:l.item,def:l.def,moves:l.moves.slice(),iv:l.iv,seal:0});S.gen=null;refresh();return}
+  const rm=e.target.closest("[data-rm]");
+  if(rm){const i=+rm.dataset.rm;t.mons.splice(i,1);remapAfterRemove(t,i);S.gen=null;refresh();return}
+  const card=e.target.closest(".mon");if(!card)return;const slot=+card.dataset.slot,b=e.target.closest("button");if(!b)return;
+  let ok=true;
+  if(b.dataset.hp)ok=setCfg(t.id,slot,{hp:+b.dataset.hp});
+  else if(b.dataset.sh!==undefined)ok=setCfg(t.id,slot,{sh:+b.dataset.sh});
+  else if(b.dataset.st!==undefined)ok=setCfg(t.id,slot,{st:+b.dataset.st});
+  if(ok)refresh();
+});
+$("det").addEventListener("change",e=>{
+  const t=S.trainers.find(x=>x.id===S.sel);if(!t)return;const el=e.target;
+  if(el.id==="dbl"){
+    const prev=t.double;t.double=el.checked;
+    if(usedBytes()>REGION){t.double=prev;toast("Spazio finito: non c'è posto per un altro allenatore in doppio.")}
+    S.gen=null;refresh();return;
+  }
+  if(el.matches("[data-hpin]")){const slot=+el.closest(".mon").dataset.slot;const v=Math.min(100,Math.max(1,parseInt(el.value,10)||100));
+    if(setCfg(t.id,slot,{hp:v}))refresh();else renderDet();return}
+  const f=el.dataset.f;if(!f)return;
+  if(f==="def"){const m=t.mons[+el.closest(".mon").dataset.slot];m.def=el.checked;if(!m.def)m.moves=defaultMoves(m);S.gen=null;refresh();return}
+  let v=parseInt(el.value,10)||0;
+  if(el.classList.contains("cmb")){const q=el.value.trim().toLowerCase(),id=S.rev[el.dataset.k].get(q);
+    if(id===undefined){if(q)toast("«"+el.value.trim()+"» non è nell'elenco: scegli una voce.");renderDet();return}
+    v=id;if(v===+el.dataset.v){renderDet();return}}
+  if(f.startsWith("bag")){t.items[+f.slice(3)]=v}
+  else{
+    const m=t.mons[+el.closest(".mon").dataset.slot];
+    if(f==="species"){m.species=v;m.form=0}
+    else if(f==="level")m.level=Math.min(100,Math.max(1,v||1));
+    else if(f==="item")m.item=v;
+    else if(f.startsWith("mv"))m.moves[+f.slice(2)]=v;
+  }
+  S.gen=null;refresh();
+});
+/* combo di ricerca: all'ingresso si svuota il campo così compare tutto l'elenco; si scrive per filtrare */
+$("det").addEventListener("focusin",e=>{const el=e.target;if(el.classList&&el.classList.contains("cmb")&&!el.disabled){
+  el.dataset.prev=el.value;el.dataset.ph=el.placeholder;
+  if(el.value){el.placeholder=el.value;el.classList.add("keep")}   // il nome assegnato resta visibile (come segnaposto) mentre l'elenco completo è disponibile
+  el.value=""}});
+$("det").addEventListener("focusout",e=>{const el=e.target;if(el.classList&&el.classList.contains("cmb")&&!el.disabled){
+  if(el.value===""&&el.dataset.prev)el.value=el.dataset.prev;
+  el.classList.remove("keep");if(el.dataset.ph!==undefined)el.placeholder=el.dataset.ph}});
+$("det").addEventListener("input",e=>{const el=e.target;
+  if(el.classList&&el.classList.contains("cmb")&&(!e.inputType||e.inputType==="insertReplacementText")&&S.rev[el.dataset.k].has(el.value.trim().toLowerCase())){
+    el.dispatchEvent(new Event("change",{bubbles:true}))}});
+/* barra HP trascinabile */
+let hpDrag=null;
+const hpFromX=(bar,x)=>{const r=bar.getBoundingClientRect();return Math.min(100,Math.max(1,Math.round((x-r.left)/r.width*100)))};
+function hpPaint(bar,v){bar.setAttribute("aria-valuenow",v);const i=bar.querySelector("i"),th=bar.querySelector(".thumb");i.style.width=v+"%";i.style.background=hpColor(v);th.style.left=v+"%";
+  const inp=bar.closest(".cond").querySelector("[data-hpin]");if(inp)inp.value=v}
+function hpCommit(bar,v){const t=S.trainers.find(x=>x.id===S.sel);if(!t)return;const slot=+bar.closest(".mon").dataset.slot;if(setCfg(t.id,slot,{hp:v}))refresh();else renderDet()}
+$("det").addEventListener("pointerdown",e=>{const bar=e.target.closest&&e.target.closest("[data-hpbar]");if(!bar)return;
+  e.preventDefault();bar.classList.add("drag");hpDrag={bar,v:hpFromX(bar,e.clientX)};try{bar.setPointerCapture(e.pointerId)}catch(_){}hpPaint(bar,hpDrag.v);bar.focus()});
+$("det").addEventListener("pointermove",e=>{if(!hpDrag)return;hpDrag.v=hpFromX(hpDrag.bar,e.clientX);hpPaint(hpDrag.bar,hpDrag.v)});
+const hpEnd=e=>{if(!hpDrag)return;const d=hpDrag;hpDrag=null;d.bar.classList.remove("drag");hpCommit(d.bar,d.v)};
+$("det").addEventListener("pointerup",hpEnd);$("det").addEventListener("pointercancel",hpEnd);
+$("det").addEventListener("keydown",e=>{const bar=e.target.closest&&e.target.closest("[data-hpbar]");if(!bar)return;
+  const cur=+bar.getAttribute("aria-valuenow"),st=e.shiftKey?10:1;let v=null;
+  if(e.key==="ArrowRight"||e.key==="ArrowUp")v=cur+st;else if(e.key==="ArrowLeft"||e.key==="ArrowDown")v=cur-st;else if(e.key==="Home")v=1;else if(e.key==="End")v=100;
+  if(v===null)return;e.preventDefault();v=Math.min(100,Math.max(1,v));hpPaint(bar,v);hpCommit(bar,v)});
+$("bProf").onclick=()=>{$("prof").hidden=!$("prof").hidden};
+$("pSave").onclick=()=>{const n=$("pname").value.trim();if(!n){toast("Scrivi un nome per il profilo.");return}const P=profs();P[n]=profileObj();try{localStorage.setItem("ptc-profiles",JSON.stringify(P));refreshProfiles();toast("Profilo salvato nel browser.")}catch(e){toast("Il browser non permette di salvare i profili. Usa Esporta JSON.")}};
+$("pLoad").onclick=()=>{const P=profs(),n=$("pSel").value;if(P[n])applyProfile(P[n]);else toast("Nessun profilo da caricare.")};
+$("pExp").onclick=()=>save("profilo_condizioni.json",JSON.stringify(profileObj(),null,2));
+$("pImp").onclick=()=>$("pFile").click();
+$("pFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{applyProfile(JSON.parse(await f.text()))}catch(err){toast("Profilo non valido: "+err.message)}e.target.value=""};
+$("pReset").onclick=()=>{S.trainers.forEach(resetTrainer);S.cfg=new Map();S.gen=null;renderList();renderDet();stats();renderDrawer();toast("Tutte le modifiche sono state azzerate.")};
+$("bPatch").onclick=()=>{const d=$("drawer");d.hidden=!d.hidden;if(!d.hidden){setStep(3);renderDrawer();d.scrollIntoView({behavior:"smooth",block:"nearest"})}else setStep(2)};
+$("bGen").onclick=generate;$("bIps").onclick=saveIps;$("bRom").onclick=saveRom;$("bData").onclick=saveData;
+setStep(1);
+</script>

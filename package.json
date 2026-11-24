@@ -1,0 +1,16 @@
+{
+  "name": "platino-trainer-conditions",
+  "version": "1.0.0",
+  "description": "Editor allenatori e condizioni per Pokémon Platino (USA)",
+  "main": "main.js",
+  "scripts": { "start": "electron .", "build": "electron-builder --win portable" },
+  "devDependencies": { "electron": "^33.0.0", "electron-builder": "^25.0.0" },
+  "build": {
+    "appId": "local.platino.trainer",
+    "productName": "Platinum Trainer Editor",
+    "files": ["main.js", "app/**"],
+    "win": { "target": "portable" },
+    "mac": { "target": "dmg" },
+    "linux": { "target": "AppImage" }
+  }
+}
