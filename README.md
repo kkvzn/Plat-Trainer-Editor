@@ -64,13 +64,6 @@ The portable executable will be generated in the `dist` directory.
 
 For macOS and Linux, run the appropriate Electron Builder command on the target operating system.
 
-## Technology
-
-- HTML
-- CSS
-- JavaScript
-- Electron (desktop version)
-
 ## Project Status
 
 The trainer editing and ROM export workflow is functional and has been tested with melonDS.
