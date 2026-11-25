@@ -339,10 +339,10 @@ table.t td{padding:6px 8px;border-bottom:1px solid var(--line)}
       <div class="kv"><div><b id="dCount">0</b><small>Pokémon con condizioni</small></div><div><b id="dSolo">0</b><small>Allenatori in doppio da soli</small></div><div><b id="dCap">0 / 300</b><small>Codice aggiunto (byte)</small></div></div>
       <div class="cap" style="margin-top:8px"><i id="dBar" style="width:0%"></i></div>
     </div>
-    <h3>Condizioni dei Pokémon</h3>
-    <div class="tw"><table class="t" id="dTable"></table></div>
-    <h3>Allenatori con dati modificati (file per DSPRE)</h3>
-    <div class="tw"><table class="t" id="dData"></table></div>
+    <h3><button class="foldb" data-dfold="cond" aria-expanded="true">Condizioni dei Pokémon<svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h3>
+    <div class="tw" id="dfCond"><table class="t" id="dTable"></table></div>
+    <h3><button class="foldb" data-dfold="data" aria-expanded="true">Allenatori con dati modificati (file per DSPRE)<svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h3>
+    <div class="tw" id="dfData"><table class="t" id="dData"></table></div>
     <div id="dChecks" style="display:grid;gap:8px"></div>
     <div class="acts">
       <button class="btn" id="bGen">Genera e controlla</button>
@@ -791,7 +791,7 @@ function abilityLine(sp){
   return `<div class="ab" title="${a2?"Abilità 2 (non usata dagli allenatori in Platino): "+esc(a2):"Questo Pokémon ha una sola abilità"}"><span class="k">Abilità</span>${esc(a1)}</div>`;
 }
 // flag dell'IA nell'intestazione dell'allenatore (u32 a offset 12): stessi nomi e bit di DSPRE (verificati su tutti i 928 allenatori)
-S.fold=(()=>{try{const v=JSON.parse(localStorage.getItem("pte-fold")||"null");if(v&&typeof v==="object")return {ai:!!v.ai,items:!!v.items}}catch(_){}return {ai:false,items:false}})();
+S.fold=(()=>{try{const v=JSON.parse(localStorage.getItem("pte-fold")||"null");if(v&&typeof v==="object")return {ai:!!v.ai,items:!!v.items,cond:v.cond===undefined?true:!!v.cond,data:v.data===undefined?true:!!v.data}}catch(_){}return {ai:false,items:false,cond:true,data:true}})();
 const AI_FLAGS=[[0,"Basic AI","Valutazioni di base: evita mosse inutili o che non hanno effetto"],[1,"Evaluate Attack","Sceglie le mosse d'attacco in base ai danni stimati"],[2,"Expert AI","Strategie avanzate: mosse di stato, protezione, cambi mirati"],[3,"Setup First Turn","Preferisce le mosse di preparazione al primo turno"],[4,"Risky AI","Tende a rischiare: mosse a bassa precisione o con contraccolpo"],[5,"Prioritize Extremes","Predilige le mosse con danno estremo (colpo letale o molto efficace)"],[6,"Baton Pass AI","Usa Staffetta per passare i potenziamenti"],[7,"Tag Strategy","Strategie per le lotte in doppio con un compagno"],[8,"Check HP","Tiene conto dei PV propri e dell'avversario"],[9,"Weather AI","Sfrutta e cambia il clima"],[10,"Harassment AI","Logora l'avversario con stati alterati e mosse di disturbo"]];
 function monCard(t,m,i){
   const T=S.texts,c=S.cfg.get(key(t.id,i))||{hp:100,st:0},hp=c.hp||100;
@@ -1188,6 +1188,9 @@ function setDouble(t,v){const prev=t.double;t.double=v;
   if(usedBytes()>REGION){t.double=prev;toast("Spazio finito: non c'è posto per un altro allenatore in doppio.")}
   S.gen=null;refresh()}
 $("det").addEventListener("mousedown",e=>{if(e.target.closest&&e.target.closest(".cx"))e.preventDefault()});
+function applyDFold(){for(const[k,id]of[["cond","dfCond"],["data","dfData"]]){const o=!!S.fold[k];$(id).hidden=!o;const b=document.querySelector('[data-dfold="'+k+'"]');if(b)b.setAttribute("aria-expanded",o?"true":"false")}}
+document.addEventListener("click",e=>{const f=e.target.closest&&e.target.closest("[data-dfold]");if(!f)return;const k=f.dataset.dfold;S.fold[k]=!S.fold[k];try{localStorage.setItem("pte-fold",JSON.stringify(S.fold))}catch(_){}applyDFold()});
+applyDFold();
 $("det").addEventListener("click",e=>{
   const cx=e.target.closest&&e.target.closest(".cx");
   if(cx){const inp=cx.parentNode.querySelector(".cmb");inp.value=S.lab[inp.dataset.k].get(0)||"";inp.dispatchEvent(new Event("change",{bubbles:true}));return}
