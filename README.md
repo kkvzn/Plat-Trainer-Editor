@@ -74,7 +74,6 @@ The project is still under development. Additional trainer editing features and 
 
 The following features are planned for future updates:
 
-- **Trainer AI Flags** – Add the ability to view and configure individual trainer AI flags to customize battle behavior.
 - **Expanded Trainer Settings** – Introduce additional options for configuring trainer battle parameters.
 - **Improved Trainer Management** – Enhance trainer browsing, searching, filtering, and editing workflows.
 - **Validation Tools** – Add checks to detect invalid or inconsistent trainer data before exporting.
