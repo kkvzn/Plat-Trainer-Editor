@@ -1115,7 +1115,7 @@ async function saveRom(){
   if(!S.gen)return;const hh=await askWhere(base()+"_patched.zip");if(hh==="cancel"){toast("Salvataggio annullato.");return}
   $("dNote").textContent="Preparo la ROM… può richiedere qualche secondo.";
   await new Promise(r=>setTimeout(r,30));
-  const r=patchedRom(S.gen.list,S.gen.solo,true),crc=crc32([r]),name=base()+"_patched.nds";
+  const r=patchedRom(S.gen.list,S.gen.solo,true),crc=crc32([r]),name=S.name;
   await save(base()+"_patched.zip",zipBlob(name,[r],r.length,crc),hh);
   $("dNote").textContent="Dentro lo zip trovi "+name+". La ROM originale non è stata modificata.";
 }
