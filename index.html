@@ -716,7 +716,15 @@ function buildOptions(){
 /* ---------- Step 2: editor ---------- */
 const key=(id,s)=>id+":"+s;
 const isMod=c=>c&&((c.hp&&c.hp<100)||c.st||c.sh);
-const nModTrainer=t=>t.mons.some((_,i)=>isMod(S.cfg.get(key(t.id,i))))||dataDirty(t);
+// «modificato» = diverso dal vanilla (se i dati originali sono disponibili), altrimenti diverso dalla ROM caricata. L'export continua a usare dataDirty (differenze rispetto alla ROM caricata)
+const _vanN=new Map();
+function vanDiff(t){
+  const v=S.vanilla&&S.vanilla.get(t.id); if(!v)return dataDirty(t);
+  let n=_vanN.get(t.id);
+  if(n===undefined){const o=JSON.parse(v);n=snapN({mons:o[0].map(a=>({species:a[0],form:a[1],level:a[2],item:a[3],def:a[4]==="d",moves:a[4]==="d"?[0,0,0,0]:a[4].slice(),iv:a[5],seal:a[6]})),items:o[1],double:!!o[2],ai:o[3]===undefined?t.ai:o[3]});_vanN.set(t.id,n)}
+  return snapN(t)!==n;
+}
+const nModTrainer=t=>t.mons.some((_,i)=>isMod(S.cfg.get(key(t.id,i))))||vanDiff(t);
 function entries(){
   const out=[];
   for(const t of S.trainers)t.mons.forEach((m,i)=>{const c=S.cfg.get(key(t.id,i));if(isMod(c))out.push({t,m,slot:i,id:t.id,hp:c.hp<100?c.hp:0,hpShown:c.hp||100,st:c.st||0,sh:c.sh?1:0})});
@@ -759,7 +767,7 @@ const STLAB={none:"Nessuno",brn:"BRN",psn:"PSN",tox:"TOX",par:"PAR",slp:"SLP",fr
 const cmb=(f,v,kind,label,dis,ph)=>`<span class="cw${v?" has":""}${kind==="moves"&&typeBadge(v)?" hasT":""}">${kind==="moves"?typeBadge(v):""}<input class="cmb" type="text" list="dl-${kind}" data-k="${kind}" data-f="${f}" data-v="${v}" value="${esc(v?(S.lab[kind].get(v)||"#"+v):"")}" placeholder="${dis?"—":(ph||PH[kind])}" autocomplete="off" aria-label="${esc(label)}" ${dis?"disabled":""}>${dis||kind==="species"?"":'<button type="button" class="cx" tabindex="-1" aria-label="Svuota il campo (nessuna selezione)" title="Svuota il campo">×</button>'}</span>`;
 function renderDet(){
   const t=S.trainers.find(x=>x.id===S.sel);if(!t)return;
-  const T=S.texts, d=dataDirty(t);
+  const T=S.texts, d=vanDiff(t);
   const html=`
    <div class="dh"><div><h2>${esc(t.name||"(senza nome)")}</h2><div class="cls">${esc(t.cls)}</div></div>
      <div class="seg" role="group" aria-label="Formato della lotta"><button class="sg" data-dbl="0" aria-pressed="${t.double?"false":"true"}" ${t.paired?"disabled":""}>Lotta in Singolo</button><button class="sg" data-dbl="1" aria-pressed="${t.double?"true":"false"}" ${t.paired?"disabled":""}>Lotta in Doppio</button></div>
