@@ -248,6 +248,29 @@ table.t td{padding:6px 8px;border-bottom:1px solid var(--line)}
 .checks:not([hidden]),#goRow:not([hidden]){animation:rise var(--dur) var(--ease) both}
 .toast:not([hidden]){animation:pop var(--dur) var(--ease) both}
 .hpbar.drag i,.hpbar.drag .thumb{transition:none}
+/* schermata di caricamento su telefono (design Figma «MOBILE: Upload ROM») */
+.mob{display:none}
+@media(max-width:600px){
+  .dsk{display:none}.mob{display:inline}
+  body:has(#v-load:not([hidden])){background:var(--bg);padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}
+  body:has(#v-load:not([hidden])) header.top{background:var(--bg);gap:11px;padding-block:25px 20px;margin-top:-16px}
+  body:has(#v-load:not([hidden])) .logo{height:47.5px}
+  body:has(#v-load:not([hidden])) .brand{font:700 24px/1.1 var(--font-d);color:#f7f3f2}
+  .load{gap:32px;padding-top:0}
+  #v-load{font-family:var(--font-d)}
+  #v-load .drop{padding:24px 8px;border:1px dashed rgba(223,223,223,.7);border-radius:12px;background:rgba(22,26,34,.9);-webkit-backdrop-filter:none;backdrop-filter:none}
+  #v-load .drop h1{font:500 24px/normal var(--font-d);color:#dfdfdf;margin:0 0 20px}
+  #v-load .drop p{font:400 16px/normal var(--font-d);color:#dfdfdf;opacity:.5;max-width:none;margin:0 0 20px}
+  #v-load #pick{position:relative;font:700 13.27px/normal var(--font-d);color:#dfdfdf;padding:5.5px 12px;border-radius:9px;background:linear-gradient(103deg,#46288F 6.3%,#5536A1 50.5%,#2A165B 96.4%)}
+  #v-load #pick::after{content:"";position:absolute;inset:-9px -6px}
+  #v-load .req{padding:24px 8px;border:1px solid rgba(223,223,223,.3);border-radius:21px;background:rgba(22,26,34,.9);-webkit-backdrop-filter:none;backdrop-filter:none}
+  #v-load .req h2{font:500 20px/normal var(--font-d);color:#dfdfdf;text-align:center;margin:0 0 20px}
+  #v-load .req ul{gap:20px}
+  #v-load .req li{grid-template-columns:43px 1fr;gap:13px;align-items:center}
+  #v-load .req li .ic{width:43px;height:41px;border-radius:30px;background:#1d222c;font:500 24px/normal var(--font-d);color:#dfdfdf}
+  #v-load .req li b{font:500 20px/normal var(--font-d);color:#dfdfdf}
+  #v-load .req li small{font:400 16px/normal var(--font-d);color:#fff;opacity:.5}
+}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 </style>
 
@@ -279,8 +302,8 @@ table.t td{padding:6px 8px;border-bottom:1px solid var(--line)}
     <h2>Cosa serve</h2>
     <ul>
       <li><span class="ic">1</span><div><b>Platino USA</b><small>Codice gioco CPUE.</small></div></li>
-      <li><span class="ic">2</span><div><b>ARM9 non compresso</b><small>L'app aggancia il codice in tre punti dell'ARM9 e controlla che siano quelli originali del gioco. Se l'ARM9 fosse compresso va prima decompresso (con DSPRE o ndstool).</small></div></li>
-      <li><span class="ic">3</span><div><b>Overlay sintetico di DSPRE</b><small>La ROM deve avere la patch «Expand ARM9» (Patch Toolbox di DSPRE): il piccolo codice (circa 290 byte, sempre gli stessi) va nel membro 9 di <span class="mono">weather_sys.narc</span>, che il gioco carica all'avvio a 0x023C8000. HP, stato, shiny e allenatori in doppio da soli stanno in record aggiunti al file degli allenatori, quindi non hanno limite. Se manca, l'app ti chiede se applicarla lei (la stessa scrittura di DSPRE, solo nella ROM esportata); altrimenti non apre la ROM.</small></div></li>
+      <li><span class="ic">2</span><div><b>ARM9 non compresso</b><small><span class="dsk">L'app aggancia il codice in tre punti dell'ARM9 e controlla che siano quelli originali del gioco. Se l'ARM9 fosse compresso va prima decompresso (con DSPRE o ndstool).</span><span class="mob">L'app modifica il file ARM9 dentro la ROM. Controlla che il codice sia leggibile nei punti noti. Se l'ARM9 fosse compresso va prima decompresso (con DSPRE o ndstool).</span></small></div></li>
+      <li><span class="ic">3</span><div><b>Overlay sintetico di DSPRE</b><small><span class="dsk">La ROM deve avere la patch «Expand ARM9» (Patch Toolbox di DSPRE): il piccolo codice (circa 290 byte, sempre gli stessi) va nel membro 9 di <span class="mono">weather_sys.narc</span>, che il gioco carica all'avvio a 0x023C8000. HP, stato, shiny e allenatori in doppio da soli stanno in record aggiunti al file degli allenatori, quindi non hanno limite. Se manca, l'app ti chiede se applicarla lei (la stessa scrittura di DSPRE, solo nella ROM esportata); altrimenti non apre la ROM.</span><span class="mob">La ROM deve avere la patch «Expand ARM9»<br>Se manca, l'app ti chiede se applicarla lei: altrimenti non apre la ROM.</span></small></div></li>
       <li><span class="ic">4</span><div><b>I file di dati degli allenatori</b><small><span class="mono">trdata.narc</span>, <span class="mono">trpoke.narc</span> e <span class="mono">pl_msg.narc</span> per nomi, classi, specie, strumenti e mosse.</small></div></li>
     </ul>
   </div>
