@@ -880,7 +880,7 @@ function sprite(sp){
   const c=(sp-1)%24,r=Math.floor((sp-1)/24);return `<div class="spr" style="background-position:-${c*80}px -${r*80}px" role="img" aria-label="Sprite specie ${sp}"></div>`;
 }
 const hpColor=p=>p>50?"var(--ok)":p>20?"var(--par)":"var(--bad)";
-const TYPES={0:["Normale","#A8A77A"],1:["Lotta","#C22E28"],2:["Volante","#A98FF3"],3:["Veleno","#A33EA1"],4:["Terra","#E2BF65"],5:["Roccia","#B6A136"],6:["Coleottero","#A6B91A"],7:["Spettro","#735797"],8:["Acciaio","#B7B7CE"],10:["Fuoco","#EE8130"],11:["Acqua","#6390F0"],12:["Erba","#7AC74C"],13:["Elettro","#F7D02C"],14:["Psico","#F95587"],15:["Ghiaccio","#96D9D6"],16:["Drago","#6F35FC"],17:["Buio","#705746"]};
+const TYPES={0:["Normale","#A8A77A"],1:["Lotta","#C22E28"],2:["Volante","#A98FF3"],3:["Veleno","#A33EA1"],4:["Terra","#E2BF65"],5:["Roccia","#B6A136"],6:["Coleott","#A6B91A"],7:["Spettro","#735797"],8:["Acciaio","#B7B7CE"],10:["Fuoco","#EE8130"],11:["Acqua","#6390F0"],12:["Erba","#7AC74C"],13:["Elettro","#F7D02C"],14:["Psico","#F95587"],15:["Ghiaccio","#96D9D6"],16:["Drago","#6F35FC"],17:["Buio","#705746"]};
 const typeBadge=mv=>{const ty=S.mtype&&mv?TYPES[S.mtype[mv]]:null;return ty?`<span class="tb" style="--tc:${ty[1]}" title="Tipo: ${ty[0]}">${ty[0]}</span>`:""};
 const PH={species:"Inserisci specie",items:"Inserisci strumento",moves:"Inserisci mossa"};
 const STLAB={none:"Nessuno",brn:"BRN",psn:"PSN",tox:"TOX",par:"PAR",slp:"SLP",frz:"FRZ"};
