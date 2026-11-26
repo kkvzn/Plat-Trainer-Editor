@@ -272,13 +272,95 @@ table.t td{padding:6px 8px;border-bottom:1px solid var(--line)}
   #v-load .req li b{font:500 20px/normal var(--font-d);color:#dfdfdf}
   #v-load .req li small{font:400 16px/normal var(--font-d);color:#fff;opacity:.5}
 }
+/* editor degli allenatori su telefono (design Figma «MOBILE: Trainer Editor») */
+.bs,.mnav,.mfade{display:none}
+@media(max-width:600px){
+  body:has(#v-ed:not([hidden])){padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
+  /* intestazione */
+  body:has(#v-ed:not([hidden])) header.top{flex-wrap:nowrap;gap:8px;padding-block:9px 18px}
+  body:has(#v-ed:not([hidden])) .logo{height:36.5px}
+  body:has(#v-ed:not([hidden])) .brand .bl{display:none}
+  body:has(#v-ed:not([hidden])) .brand .bs{display:inline;font:700 18px var(--font-d);color:#f7f3f2}
+  body:has(#v-ed:not([hidden])) .grow{flex:1 1 0;min-width:0}
+  #hAgain,#bPatch{position:relative;white-space:nowrap;padding:5.6px 6px;border-radius:9px;font:400 14px/normal var(--font-d);color:#fff}
+  #hAgain{background:#161a22;border:1px dashed rgba(223,223,223,.3)}
+  #bPatch{background:#8b5cf6;border:1px solid rgba(223,223,223,.3);font-weight:700}
+  #hAgain::after,#bPatch::after{content:"";position:absolute;inset:-8px -3px}
+  /* barra di navigazione in basso */
+  .mfade{display:block;position:fixed;left:0;right:0;bottom:0;height:122px;z-index:40;pointer-events:none;background:linear-gradient(to top,#0e1116,rgba(14,17,22,0));-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);-webkit-mask-image:linear-gradient(to top,#000 45%,transparent);mask-image:linear-gradient(to top,#000 45%,transparent)}
+  .mnav{display:flex;justify-content:space-between;align-items:center;position:fixed;z-index:41;left:max(24px,env(safe-area-inset-left,0px));right:max(24px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));padding:12px 19px;background:#0d1115;border:1px solid rgba(223,223,223,.2);border-radius:63px}
+  body:has(#v-ed[hidden]) .mnav,body:has(#v-ed[hidden]) .mfade{display:none}
+  .mn{position:relative;display:grid;place-items:center;width:40px;height:34px;padding:0;border:0;background:none;border-radius:12px}
+  .mn img,.mn svg{display:block;max-width:100%;max-height:100%;width:34px;height:32px;object-fit:contain}
+  .mn:disabled{opacity:.55;cursor:default}
+  .mn.on::after{content:"";position:absolute;left:50%;bottom:-8px;width:16px;height:3px;margin-left:-8px;border-radius:3px;background:#8b5cf6}
+  /* barra superiore: niente schede, solo Profili e riepilogo */
+  #v-ed .tabs{display:none}
+  #v-ed .nav{justify-content:flex-end;margin-bottom:10px}
+  #v-ed .stats{flex-wrap:nowrap;overflow-x:auto;gap:18px;white-space:nowrap;scrollbar-width:none;margin-bottom:14px}
+  #v-ed .stats::-webkit-scrollbar{display:none}
+  /* ricerca ed elenco a comparsa */
+  #v-ed .ed{gap:12px}
+  #v-ed .list{background:none;border:0;min-height:0;max-height:none;overflow:visible;position:static}
+  #v-ed .filters{padding:0;gap:10px}
+  #v-ed .filters input{height:42px;padding:0 42px 0 50px;border:1px solid rgba(223,223,223,.2);border-radius:33px;background-color:#212428;background-position:26px center;background-size:17px;font:400 18px/normal var(--font-d);color:#fff}
+  #v-ed .filters input::placeholder{color:#fff;opacity:.5}
+  #v-ed .filters .two select{background-color:#212428;border:1px solid rgba(223,223,223,.2);font:500 13px var(--font-d)}
+  #v-ed .list .items{display:none;max-height:min(58vh,460px);margin-top:2px;padding:6px;background:#161a22;border-radius:16px}
+  #v-ed.pick .list .items{display:block}
+  #v-ed.pick .det{display:none}
+  /* pannello dell'allenatore */
+  #v-ed .det{padding:18px 13px 20px;background:#161a22;border:0;border-radius:16px}
+  #v-ed .dh{gap:10px 12px;margin-bottom:10px}
+  #v-ed .dh h2{font:700 24px/1.15 var(--font-b)}
+  #v-ed .dh .cls{font:400 18px/1.2 var(--font-b);opacity:.5;color:#fff;margin-top:0}
+  #v-ed .dh .seg{flex:1 1 100%;margin-left:0;padding:4px 6px;gap:8px;background:#18181b;border:1px solid rgba(223,223,223,.2);border-radius:9px;align-items:center}
+  #v-ed .dh .seg .sg{flex:1;text-align:center;padding:6.5px 9px;font:400 13.1px/normal var(--font-b);border-radius:19px;color:#fff}
+  #v-ed .dh .seg .sg[aria-pressed="true"]{font-weight:700;background:#474252}
+  #v-ed .dh .rm{margin-left:0;font:400 13px var(--font-b)}
+  #v-ed .sh{font:600 16px/normal var(--font-b);color:#dfdfdf;margin:22px 0 12px}
+  #v-ed .sh .ct{opacity:.5}
+  #v-ed .opts .items4{grid-template-columns:1fr 1fr;gap:18px 19px}
+  #v-ed .opts .cmb{padding:9px 24px 9px 10px;border:1px solid rgba(223,223,223,.2);border-radius:11px;background-color:#18181b;font-size:12.4px}
+  #v-ed .opts .cmb::placeholder{opacity:.3}
+  /* Pokémon */
+  #v-ed .party{gap:0}
+  #v-ed .mon{padding:0;border:0;border-radius:0;gap:16px}
+  #v-ed .mon+.mon{margin-top:20px;padding-top:20px;border-top:1px solid rgba(223,223,223,.12)}
+  #v-ed .grip{display:none}
+  #v-ed .mon:has(.trash) .mtop{padding-left:0;padding-right:46px}
+  #v-ed .mtop{flex-wrap:nowrap;gap:8px}
+  #v-ed .spr{zoom:1;margin:0 4px 0 0}
+  #v-ed .mtop .cw.sp{flex:0 1 auto}
+  #v-ed .cmb[data-k="species"]{padding:12px 28px 12px 12px;border:0;border-radius:16px;background-color:#212428;font:600 16px var(--font-b)}
+  #v-ed .lvl{width:56px;padding:12px;border-radius:16px;background:#212428;font:400 16px var(--font-b)}
+  #v-ed .ab{font:400 14px var(--font-b)}.ab .k{opacity:.5;color:#fff}
+  #v-ed .mrow .cw{flex:1 1 150px}
+  #v-ed .mrow .cmb{padding:12px 28px 12px 12px;border:1px solid rgba(223,223,223,.2);border-radius:14px;background-color:#18181b;font-size:13px}
+  #v-ed .hpbar{height:9.3px;border-radius:11px}#v-ed .hpbar i{border-radius:11px 0 0 11px}
+  #v-ed .hpin input{width:64px;border-radius:6px;background:#212428;border:1px solid rgba(223,223,223,.2)}
+  #v-ed .chk input{width:22px;height:22px;border-radius:3.4px;border-color:rgba(223,223,223,.2)}
+  #v-ed .chk input:checked{background-color:#8b5cf6}
+  #v-ed .chk label{font:700 16px var(--font-b)}
+  #v-ed .mv4{grid-template-columns:1fr 1fr;gap:12px 14px}
+  #v-ed .mv4 .cmb{padding:12px 8px 12px 12px;border-radius:15px;border-color:rgba(223,223,223,.2);background-color:#12151d;background-image:none;font-size:15px}
+  #v-ed .mv4 .cw.hasT .cmb{padding-left:62px}
+  #v-ed .mv4 .tb{min-width:48px;font-size:9px;left:8px}
+  #v-ed .addmon{border-color:rgba(223,223,223,.3);border-radius:16px;font:400 15px var(--font-b)}
+  /* pannello di esportazione */
+  #v-ed .drawer{padding:16px 13px}
+  #v-ed .drawer .acts{flex-direction:column;align-items:stretch}
+  #v-ed .drawer .acts .btn{width:100%}
+  #v-ed .kv{flex-direction:column;gap:8px}
+}
+@media(max-width:380px){body:has(#v-ed:not([hidden])) .brand .bs{display:none}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 </style>
 
 <div class="wrap">
 <header class="top">
   <img class="logo" src="logo.png" alt="">
-  <span class="brand">Platinum Trainer Editor</span>
+  <span class="brand"><span class="bl">Platinum Trainer Editor</span><span class="bs">PTE</span></span>
   <span class="grow"></span>
   <button class="btn ghost" id="hAgain" hidden>Scegli un'altra ROM</button>
   <button class="btn pri exp" id="bPatch" hidden>Esporta ROM</button>
@@ -356,6 +438,14 @@ table.t td{padding:6px 8px;border-bottom:1px solid var(--line)}
     <div id="dls" hidden></div><div class="card det" id="det"><div class="empty">Scegli un allenatore dalla lista.</div></div>
   </div>
 
+  <div class="mfade" aria-hidden="true"></div>
+  <nav class="mnav" aria-label="Sezioni dell'editor">
+    <button class="mn on" aria-current="page" aria-label="Trainer Editor"><img src="logo.png" alt=""></button>
+    <button class="mn" disabled aria-label="Pokémon Editor" title="Non ancora disponibile"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="#f2f2f2" stroke="#111" stroke-width="2.2"/><path d="M3 16a13 13 0 0 1 26 0z" fill="#e5392f" stroke="#111" stroke-width="2.2"/><path d="M3 16h26" stroke="#111" stroke-width="2.6"/><circle cx="16" cy="16" r="4.2" fill="#f2f2f2" stroke="#111" stroke-width="2.2"/></svg></button>
+    <button class="mn" disabled aria-label="Encounter Editor" title="Non ancora disponibile"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 29c2-9 3-14 3-22 3 6 4 12 4 22zM11 29c0-8 1-15 5-23 4 8 5 15 5 23zM22 29c0-9 1-14 4-20 1 8 1 14 3 20z" fill="#4f9e3b" stroke="#17331a" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
+    <button class="mn" disabled aria-label="Moves Editor" title="Non ancora disponibile"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="2.5" y="6" width="27" height="20" rx="4" fill="#d6452f" stroke="#111" stroke-width="2"/><rect x="7" y="10" width="18" height="12" rx="2" fill="#1b3f9c" stroke="#111" stroke-width="1.6"/><circle cx="16" cy="16" r="3.6" fill="#f6c343" stroke="#111" stroke-width="1.6"/></svg></button>
+    <button class="mn" disabled aria-label="Items Editor" title="Non ancora disponibile"><svg viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="18" rx="9.5" ry="11.5" fill="#8a56d6" stroke="#2a1457" stroke-width="2"/><ellipse cx="13" cy="13" rx="3" ry="4.5" fill="#d9c3f7" opacity=".85"/></svg></button>
+  </nav>
   <div class="card drawer" id="drawer" hidden>
     <h2>Patch ed esportazione</h2>
     <div class="note">Tre passaggi separati: controllo, generazione e salvataggio. La tua ROM originale non viene mai toccata. Le condizioni (HP, stato, shiny) e la lotta doppia da soli finiscono nei dati degli allenatori nella ROM, con un piccolo codice nell'overlay sintetico di DSPRE (tre salti nell'ARM9); Pokémon, mosse e strumenti vanno nei file degli allenatori per DSPRE.</div>
@@ -1190,6 +1280,15 @@ $("q").addEventListener("input",()=>$("sw").classList.toggle("has",!!$("q").valu
 $("qx").addEventListener("mousedown",e=>e.preventDefault());
 $("qx").onclick=()=>{const q=$("q");q.value="";q.dispatchEvent(new Event("input",{bubbles:true}));q.focus()};
 $("items").onclick=e=>{const b=e.target.closest(".it");if(b)select(+b.dataset.id)};
+// telefono: l'elenco degli allenatori si apre toccando la ricerca e si chiude scegliendo
+(()=>{const ed=$("v-ed"),mq=matchMedia("(max-width:600px)");
+  const open=()=>{if(mq.matches)ed.classList.add("pick")},close=()=>ed.classList.remove("pick");
+  $("q").addEventListener("focus",open);$("sw").addEventListener("click",open);
+  $("items").addEventListener("click",e=>{if(e.target.closest(".it")){close();scrollTo(0,0)}});
+  document.addEventListener("click",e=>{if(ed.classList.contains("pick")&&!e.target.closest(".list"))close()});
+  $("q").addEventListener("keydown",e=>{if(e.key==="Escape"){close();$("q").blur()}});
+  addEventListener("resize",()=>{if(!mq.matches)close()})})();
+
 function refresh(){renderDet();renderList();stats()}
 /* aggiorna il DOM esistente invece di ricrearlo, così le transizioni CSS animano da uno stato all'altro */
 const PAINT={};
