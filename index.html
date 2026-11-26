@@ -296,7 +296,7 @@ table.t td{padding:6px 8px;border-bottom:1px solid var(--line)}
   .mn.on::after{content:"";position:absolute;left:50%;bottom:-8px;width:16px;height:3px;margin-left:-8px;border-radius:3px;background:#8b5cf6}
   /* barra superiore: niente schede, solo Profili e riepilogo */
   #v-ed .tabs{display:none}
-  #v-ed .nav{justify-content:flex-end;margin-bottom:10px}
+  #v-ed .nav{display:none}
   #v-ed .stats{flex-wrap:nowrap;overflow-x:auto;gap:18px;white-space:nowrap;scrollbar-width:none;margin-bottom:14px}
   #v-ed .stats::-webkit-scrollbar{display:none}
   /* ricerca ed elenco a comparsa */
@@ -319,13 +319,16 @@ table.t td{padding:6px 8px;border-bottom:1px solid var(--line)}
   #v-ed .dh .seg .sg[aria-pressed="true"]{font-weight:700;background:#474252}
   #v-ed .dh .rm{margin-left:0;font:400 13px var(--font-b)}
   #v-ed .sh{font:600 16px/normal var(--font-b);color:#dfdfdf;margin:22px 0 12px}
-  #v-ed .sh .ct{opacity:.5}
+  #v-ed .sh .ct{opacity:.5;margin-left:6px}
+  #v-ed .sh .foldb{display:block;text-align:left;width:100%}
+  #v-ed .sh .foldb .chev{display:inline-block;vertical-align:-4px;margin-left:6px}
   #v-ed .opts .items4{grid-template-columns:1fr 1fr;gap:18px 19px}
   #v-ed .opts .cmb{padding:9px 24px 9px 10px;border:1px solid rgba(223,223,223,.2);border-radius:11px;background-color:#18181b;font-size:12.4px}
   #v-ed .opts .cmb::placeholder{opacity:.3}
   /* Pokémon */
   #v-ed .party{gap:0}
-  #v-ed .mon{padding:0;border:0;border-radius:0;gap:16px}
+  #v-ed .mon{padding:0;border:0;border-radius:0;gap:32px}
+  #v-ed .cond.sec+.sec{margin-top:16px}
   #v-ed .mon+.mon{margin-top:20px;padding-top:20px;border-top:1px solid rgba(223,223,223,.12)}
   #v-ed .grip{display:none}
   #v-ed .mon:has(.trash) .mtop{padding-left:0;padding-right:46px}
@@ -342,7 +345,7 @@ table.t td{padding:6px 8px;border-bottom:1px solid var(--line)}
   #v-ed .chk input{width:22px;height:22px;border-radius:3.4px;border-color:rgba(223,223,223,.2)}
   #v-ed .chk input:checked{background-color:#8b5cf6}
   #v-ed .chk label{font:700 16px var(--font-b)}
-  #v-ed .mv4{grid-template-columns:1fr 1fr;gap:12px 14px}
+  #v-ed .mv4{grid-template-columns:1fr;gap:10px}
   #v-ed .mv4 .cmb{padding:12px 8px 12px 12px;border-radius:15px;border-color:rgba(223,223,223,.2);background-color:#12151d;background-image:none;font-size:15px}
   #v-ed .mv4 .cw.hasT .cmb{padding-left:62px}
   #v-ed .mv4 .tb{min-width:48px;font-size:9px;left:8px}
@@ -443,8 +446,8 @@ table.t td{padding:6px 8px;border-bottom:1px solid var(--line)}
     <button class="mn on" aria-current="page" aria-label="Trainer Editor"><img src="logo.png" alt=""></button>
     <button class="mn" disabled aria-label="Pokémon Editor" title="Non ancora disponibile"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="#f2f2f2" stroke="#111" stroke-width="2.2"/><path d="M3 16a13 13 0 0 1 26 0z" fill="#e5392f" stroke="#111" stroke-width="2.2"/><path d="M3 16h26" stroke="#111" stroke-width="2.6"/><circle cx="16" cy="16" r="4.2" fill="#f2f2f2" stroke="#111" stroke-width="2.2"/></svg></button>
     <button class="mn" disabled aria-label="Encounter Editor" title="Non ancora disponibile"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 29c2-9 3-14 3-22 3 6 4 12 4 22zM11 29c0-8 1-15 5-23 4 8 5 15 5 23zM22 29c0-9 1-14 4-20 1 8 1 14 3 20z" fill="#4f9e3b" stroke="#17331a" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
-    <button class="mn" disabled aria-label="Moves Editor" title="Non ancora disponibile"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="2.5" y="6" width="27" height="20" rx="4" fill="#d6452f" stroke="#111" stroke-width="2"/><rect x="7" y="10" width="18" height="12" rx="2" fill="#1b3f9c" stroke="#111" stroke-width="1.6"/><circle cx="16" cy="16" r="3.6" fill="#f6c343" stroke="#111" stroke-width="1.6"/></svg></button>
-    <button class="mn" disabled aria-label="Items Editor" title="Non ancora disponibile"><svg viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="18" rx="9.5" ry="11.5" fill="#8a56d6" stroke="#2a1457" stroke-width="2"/><ellipse cx="13" cy="13" rx="3" ry="4.5" fill="#d9c3f7" opacity=".85"/></svg></button>
+    <button class="mn" disabled aria-label="Moves Editor" title="Non ancora disponibile"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M19 2 6.5 18H14l-2.5 12L26 12h-8.5z" fill="#f6c343" stroke="#6b4a00" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+    <button class="mn" disabled aria-label="Items Editor" title="Non ancora disponibile"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="12.5" y="2.5" width="7" height="5" rx="1.5" fill="#c9a06a" stroke="#4a3418" stroke-width="1.6"/><path d="M13 7.5v4.2L7.8 20.5A8.6 8.6 0 0 0 15 29.5h2a8.6 8.6 0 0 0 7.2-9L19 11.7V7.5z" fill="#e0559b" stroke="#5a1236" stroke-width="1.8" stroke-linejoin="round"/><path d="M10.5 21.5c1.8 1.2 3.6 1.2 5.5 0s3.7-1.2 5.5 0" fill="none" stroke="#f7b6d6" stroke-width="1.6" stroke-linecap="round"/></svg></button>
   </nav>
   <div class="card drawer" id="drawer" hidden>
     <h2>Patch ed esportazione</h2>
