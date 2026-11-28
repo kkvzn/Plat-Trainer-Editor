@@ -1023,7 +1023,7 @@ function abilityLine(sp){
   return `<div class="ab" title="${a2?"Abilità 2 (non usata dagli allenatori in Platino): "+esc(a2):"Questo Pokémon ha una sola abilità"}"><span class="k">Abilità</span>${esc(a1)}</div>`;
 }
 // flag dell'IA nell'intestazione dell'allenatore (u32 a offset 12): stessi nomi e bit di DSPRE (verificati su tutti i 928 allenatori)
-S.fold=(()=>{try{const v=JSON.parse(localStorage.getItem("pte-fold")||"null");if(v&&typeof v==="object")return {ai:!!v.ai,items:!!v.items,cond:!!v.dcond,data:!!v.ddata,tm:!!v.tm}}catch(_){}return {ai:false,items:false,cond:false,data:false,tm:false}})();
+S.fold=(()=>{try{const v=JSON.parse(localStorage.getItem("pte-fold")||"null");if(v&&typeof v==="object")return {ai:!!v.ai,items:!!v.items,cond:!!v.dcond,data:!!v.ddata,tm:v.tm===undefined?true:!!v.tm}}catch(_){}return {ai:false,items:false,cond:false,data:false,tm:true}})();
 const AI_FLAGS=[[0,"Basic AI","Valutazioni di base: evita mosse inutili o che non hanno effetto"],[1,"Evaluate Attack","Sceglie le mosse d'attacco in base ai danni stimati"],[2,"Expert AI","Strategie avanzate: mosse di stato, protezione, cambi mirati"],[3,"Setup First Turn","Preferisce le mosse di preparazione al primo turno"],[4,"Risky AI","Tende a rischiare: mosse a bassa precisione o con contraccolpo"],[5,"Prioritize Extremes","Predilige le mosse con danno estremo (colpo letale o molto efficace)"],[6,"Baton Pass AI","Usa Staffetta per passare i potenziamenti"],[7,"Tag Strategy","Strategie per le lotte in doppio con un compagno"],[8,"Check HP","Tiene conto dei PV propri e dell'avversario"],[9,"Weather AI","Sfrutta e cambia il clima"],[10,"Harassment AI","Logora l'avversario con stati alterati e mosse di disturbo"]];
 function monCard(t,m,i){
   const T=S.texts,c=S.cfg.get(key(t.id,i))||{hp:100,st:0},hp=c.hp||100;
@@ -1161,8 +1161,8 @@ function pkTmHtml(i,r){
   const opts=miss.map(n=>{const nm=pkTmMoveName(n),lab=nm+" ("+tmLabel(n)+")";pkTmRev.set(lab.toLowerCase(),n);if(!pkTmRev.has(nm.toLowerCase()))pkTmRev.set(nm.toLowerCase(),n);return `<option value="${esc(lab)}"></option>`}).join("");
   const fam=S.fam&&S.fam[i]&&S.fam[i].length>1?S.fam[i]:null;
   const line=fam?`<label class="chk pkline"><input type="checkbox" id="pkLine"${S.pkLine?" checked":""}><span>Aggiungi a tutta la linea evolutiva <small>(${fam.map(pkName).map(esc).join(", ")})</small></span></label>`:"";
-  return `<h3 class="pks pksec"><button type="button" class="foldb" data-pkfold="tm" aria-expanded="${S.fold.tm?"true":"false"}">MOSSE TM / HM <small>${learn.length} su 100</small><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h3>
-   <div class="pktm"${S.fold.tm?"":" hidden"}>
+  return `<h3 class="pks pksec"><button type="button" class="foldb" data-pkfold="tm" aria-expanded="${S.fold.tm!==false?"true":"false"}">MOSSE TM / HM <small>${learn.length} su 100</small><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h3>
+   <div class="pktm"${S.fold.tm!==false?"":" hidden"}>
     <h4>Non può apprendere <small>${miss.length}</small></h4>
     <div class="tmg miss">${miss.map(n=>chip(n,false)).join("")||'<p class="pnote">Le impara tutte.</p>'}</div>
     <h4>Può apprendere <small>${learn.length}</small></h4>
@@ -1605,7 +1605,7 @@ $("pdet").addEventListener("change",e=>{const el=e.target;
   if(n===undefined){toast("«"+el.value.trim()+"» non è tra le mosse che può ancora imparare: scegli una voce.");renderPkDet();return}
   pkTmDo(n,true,true)});
 $("pdet").addEventListener("click",e=>{
-  const fb=e.target.closest("[data-pkfold]");if(fb){S.fold.tm=!S.fold.tm;try{localStorage.setItem("pte-fold",JSON.stringify({ai:S.fold.ai,items:S.fold.items,dcond:S.fold.cond,ddata:S.fold.data,tm:S.fold.tm}))}catch(_){}
+  const fb=e.target.closest("[data-pkfold]");if(fb){S.fold.tm=S.fold.tm===false;try{localStorage.setItem("pte-fold",JSON.stringify({ai:S.fold.ai,items:S.fold.items,dcond:S.fold.cond,ddata:S.fold.data,tm:S.fold.tm}))}catch(_){}
     fb.setAttribute("aria-expanded",S.fold.tm?"true":"false");const bx=document.querySelector("#pdet .pktm");if(bx)bx.hidden=!S.fold.tm;return}
   const ta=e.target.closest("[data-tma]");if(ta){pkTmDo(+ta.dataset.tma,true);return}
   const tx=e.target.closest("[data-tmx]");if(tx){pkTmDo(+tx.dataset.tmx,false);return}
