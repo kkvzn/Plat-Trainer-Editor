@@ -11,6 +11,7 @@ Platinum Trainer Editor is a tool designed to edit trainer data and battle condi
 ## Features
 
 - **Trainer Editor** – Browse and edit trainers from Pokémon Platinum.
+-**Pokémon Editor** - WIP
 - **Trainer Teams** – Modify Pokémon assigned to each trainer.
 - **Pokémon Conditions** – Configure battle conditions such as starting HP and status conditions.
 - **Battle Settings** – Manage single and double battle configurations.
